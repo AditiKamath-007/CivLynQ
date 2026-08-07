@@ -10,9 +10,9 @@ const { db } = require('../services/firebaseService');
 router.post('/generate-questions', async (req, res) => {
   try {
     const { goal } = req.body;
-    const result = await groqService.generateIntakeQuestions(goal);
+    const questions = await groqService.generateQuestions(goal);
     // client expects { success: true, questions: [...] }
-    res.json({ success: true, questions: result.questions });
+    res.json({ success: true, questions });
   } catch (error) {
     console.error('Error generating questions:', error);
     res.status(500).json({ success: false, message: 'Failed to generate questions' });

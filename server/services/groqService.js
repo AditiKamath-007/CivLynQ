@@ -13,9 +13,10 @@ async function generateQuestions(goal) {
   try {
     if (!groq) throw new Error('Groq not initialized');
 
-    const prompt = `You are an expert on Indian government and civic processes. 
+    const prompt = `You are a strict legal and civic expert on Indian government processes. 
 The user's goal is: "${goal}".
 Generate a JSON object with a single key "questions" containing an array of intake questions to determine their exact situation.
+CRITICAL: Ask ONLY relevant, highly specific questions absolutely necessary to determine their eligibility and path in India. Do NOT ask generic or irrelevant questions.
 Each question should have:
 - "id": string (unique identifier)
 - "question": string (the question text)
@@ -61,7 +62,7 @@ The "workflow" should have:
   - "cost": string (e.g., "Rs. 500")
   - "requiredDocuments": array of strings
   - "tips": array of strings (helpful advice)
-  - "links": array of objects with "text" and "url"
+  - "links": array of objects with "text" and "url". CRITICAL: These MUST be specific, actual, working official Indian government URLs (e.g. https://sarathi.parivahan.gov.in for DL). Do NOT provide generic links.
   - "templates": array of objects with "type" (e.g., "Affidavit", "Application") and "name"
 
 Return ONLY valid JSON.`;
@@ -89,7 +90,8 @@ async function askHelper(question, context) {
 The user asked: "${question}"
 Current Context: ${contextText}
 
-Answer the question clearly, concisely, and accurately based on Indian regulations. 
+Answer the question clearly, concisely, and accurately based on Indian regulations.
+CRITICAL: Use markdown bullet points for the answer to make it easy to read.
 Generate a JSON object with a single key "answer" containing your response as a string.`;
 
     const completion = await groq.chat.completions.create({

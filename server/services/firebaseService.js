@@ -66,18 +66,21 @@ try {
   // Implement Mock Auth
   authService = {
     verifyIdToken: async (token) => {
-      // For testing, if it's "mock-token-xyz" or similar, return a dummy user
-      if (token && token.startsWith('mock-token-')) {
-        const uid = token.replace('mock-token-', '');
+      // If the frontend sends a real token but backend is in mock mode, just accept it
+      if (token) {
+        let uid = 'testuser';
+        if (token.startsWith('mock-token-')) {
+          uid = token.replace('mock-token-', '');
+        }
         return {
           uid: uid,
-          name: uid === 'testuser' ? 'CivLynQ Test User' : uid,
+          name: uid === 'testuser' ? 'CivLynQ Test User' : 'Authenticated User',
           email: `${uid}@civlynq.in`,
           picture: 'https://lh3.googleusercontent.com/a/default-user',
           auth_time: Math.floor(Date.now() / 1000),
         };
       }
-      throw new Error('Invalid Firebase token (Mock Mode)');
+      throw new Error('Invalid Firebase token');
     }
   };
 

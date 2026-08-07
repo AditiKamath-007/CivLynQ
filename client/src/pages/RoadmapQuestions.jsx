@@ -7,7 +7,6 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Skeleton from '../components/ui/Skeleton';
 import ErrorState from '../components/ui/ErrorState';
-import '../styles/_legacy/RoadmapQuestions.css';
 
 export default function RoadmapQuestions() {
   const [searchParams] = useSearchParams();
@@ -77,7 +76,7 @@ export default function RoadmapQuestions() {
 
   if (!goal) {
     return (
-      <div className="roadmap-questions-page">
+      <div className="min-h-screen bg-slate-50 py-12 px-4 flex flex-col items-center justify-center">
         <ErrorState message="No goal specified. Please start over." />
       </div>
     );
@@ -85,15 +84,15 @@ export default function RoadmapQuestions() {
 
   if (loading) {
     return (
-      <div className="roadmap-questions-page">
-        <div className="progress-dots-container">
-          <div className="progress-dot" />
-          <div className="progress-dot" />
-          <div className="progress-dot" />
+      <div className="min-h-screen bg-slate-50 py-12 px-4 flex flex-col items-center">
+        <div className="flex justify-center gap-3 mb-8 w-full max-w-2xl">
+          <div className="w-2 h-2 rounded-full bg-slate-200" />
+          <div className="w-2 h-2 rounded-full bg-slate-200" />
+          <div className="w-2 h-2 rounded-full bg-slate-200" />
         </div>
-        <Card className="question-card">
-          <Skeleton variant="text" height="32px" style={{ marginBottom: 'var(--space-6)' }} />
-          <Skeleton variant="rectangular" height="48px" style={{ marginBottom: 'var(--space-3)' }} />
+        <Card className="w-full max-w-2xl p-8">
+          <Skeleton variant="text" height="32px" style={{ marginBottom: '1.5rem' }} />
+          <Skeleton variant="rectangular" height="48px" style={{ marginBottom: '0.75rem' }} />
           <Skeleton variant="rectangular" height="48px" />
         </Card>
       </div>
@@ -102,8 +101,8 @@ export default function RoadmapQuestions() {
 
   if (error) {
     return (
-      <div className="roadmap-questions-page">
-        <Card className="question-card">
+      <div className="min-h-screen bg-slate-50 py-12 px-4 flex flex-col items-center justify-center">
+        <Card className="w-full max-w-2xl p-8">
           <ErrorState message="Failed to load questions." onRetry={fetchQuestions} />
         </Card>
       </div>
@@ -112,10 +111,10 @@ export default function RoadmapQuestions() {
 
   if (submitting) {
     return (
-      <div className="roadmap-questions-page">
-        <Card className="question-card loading-card">
-          <Loader2 className="building-spinner" />
-          <p className="text-h2 building-text">Building your roadmap…</p>
+      <div className="min-h-screen bg-slate-50 py-12 px-4 flex flex-col items-center justify-center">
+        <Card className="w-full max-w-2xl p-12 flex flex-col items-center justify-center">
+          <Loader2 className="animate-spin text-emerald-600 mb-4 h-10 w-10" />
+          <p className="text-xl font-medium text-slate-900">Building your roadmap…</p>
         </Card>
       </div>
     );
@@ -123,8 +122,8 @@ export default function RoadmapQuestions() {
 
   if (submitError) {
     return (
-      <div className="roadmap-questions-page">
-        <Card className="question-card">
+      <div className="min-h-screen bg-slate-50 py-12 px-4 flex flex-col items-center justify-center">
+        <Card className="w-full max-w-2xl p-8">
           <ErrorState message="Failed to generate roadmap." onRetry={handleNext} />
         </Card>
       </div>
@@ -136,23 +135,23 @@ export default function RoadmapQuestions() {
   const isSelect = currentQuestion.id === 'state' || currentQuestion.id === 'location';
 
   return (
-    <div className="roadmap-questions-page">
-      <div className="progress-dots-container">
+    <div className="min-h-screen bg-slate-50 py-12 px-4 flex flex-col items-center">
+      <div className="flex justify-center gap-3 mb-8 w-full max-w-2xl">
         {questions.map((_, idx) => (
           <div
             key={idx}
-            className={`progress-dot ${idx <= currentIndex ? 'completed' : ''}`}
+            className={`w-2 h-2 rounded-full transition-colors ${idx <= currentIndex ? 'bg-emerald-600' : 'bg-slate-200'}`}
           />
         ))}
       </div>
 
-      <Card className="question-card">
-        <h2 className="text-h2 question-text">{currentQuestion.question}</h2>
+      <Card className="w-full max-w-2xl p-8">
+        <h2 className="text-2xl font-bold text-slate-900 mb-8">{currentQuestion.question}</h2>
 
-        <div className="question-options">
+        <div className="mb-8">
           {isSelect ? (
             <select
-              className="question-select"
+              className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
               value={currentValue}
               onChange={(e) => handleSelectOption(currentQuestion.id, e.target.value)}
             >
@@ -166,28 +165,28 @@ export default function RoadmapQuestions() {
               ))}
             </select>
           ) : (currentQuestion.type === 'radio' || currentQuestion.type === 'single-choice' || currentQuestion.type === 'multi-choice') ? (
-            <div className="radio-group">
+            <div className="flex flex-col gap-3">
               {(currentQuestion.options || []).map((opt) => {
                 const isSelected = currentValue === opt;
                 return (
                   <button
                     key={opt}
-                    className={`radio-pill ${isSelected ? 'selected' : ''}`}
+                    className={`flex items-center gap-3 p-4 w-full rounded-xl transition-colors text-left ${isSelected ? 'bg-emerald-50 border-emerald-500 ring-1 ring-emerald-500' : 'bg-white border border-slate-200 hover:border-emerald-500'}`}
                     onClick={() => handleSelectOption(currentQuestion.id, opt)}
                   >
-                    <div className="radio-circle">
-                      {isSelected && <div className="radio-circle-inner" />}
+                    <div className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 ${isSelected ? 'border-emerald-600' : 'border-slate-300'}`}>
+                      {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-emerald-600" />}
                     </div>
-                    <span className="text-body">{opt}</span>
+                    <span className="text-base text-slate-900">{opt}</span>
                   </button>
                 );
               })}
             </div>
           ) : (
-            <div className="input-wrapper">
+            <div className="relative flex items-center">
               <input
                 type="text"
-                className="question-input"
+                className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl pl-4 pr-12 text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                 placeholder="Type your answer here..."
                 value={currentValue}
                 onChange={(e) => handleSelectOption(currentQuestion.id, e.target.value)}
@@ -198,7 +197,7 @@ export default function RoadmapQuestions() {
                 }}
               />
               <button
-                className="input-send-btn"
+                className="absolute right-2 p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg disabled:opacity-50 disabled:text-slate-400 disabled:hover:bg-transparent transition-colors"
                 disabled={!currentValue.trim()}
                 onClick={handleNext}
               >
@@ -208,14 +207,14 @@ export default function RoadmapQuestions() {
           )}
         </div>
 
-        <div className="question-actions">
+        <div className="flex justify-end">
           <Button
             variant="primary"
             iconOnly
             icon={ArrowRight}
             onClick={handleNext}
             disabled={!currentValue.trim()}
-            className="next-btn"
+            className="w-12 h-12 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 disabled:hover:bg-emerald-600 transition-colors"
             aria-label="Next"
           />
         </div>

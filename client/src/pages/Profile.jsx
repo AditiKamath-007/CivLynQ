@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Pencil, User, FileText, ChevronRight, LogOut } from 'lucide-react';
+import { Pencil, User, FileText, ChevronRight, LogOut, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { getUserDrafts } from '../services/api';
+import { getUserDrafts, checkConsent, saveConsent } from '../services/api';
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -10,6 +10,7 @@ export default function Profile() {
   const [expandedRow, setExpandedRow] = useState(null);
   const [drafts, setDrafts] = useState([]);
   const [loadingDrafts, setLoadingDrafts] = useState(true);
+  const [hasConsented, setHasConsented] = useState(false);
 
   useEffect(() => {
     if (currentUser) {
@@ -26,8 +27,27 @@ export default function Profile() {
         .finally(() => {
           setLoadingDrafts(false);
         });
+
+      checkConsent()
+        .then(res => {
+          if (res.success) {
+            setHasConsented(res.consented);
+          }
+        })
+        .catch(err => console.error('Error checking consent:', err));
     }
   }, [currentUser]);
+
+  const handleToggleConsent = async () => {
+    const newValue = !hasConsented;
+    setHasConsented(newValue); // Optimistic update
+    try {
+      await saveConsent(newValue);
+    } catch (error) {
+      console.error('Failed to update consent:', error);
+      setHasConsented(!newValue); // Revert on failure
+    }
+  };
 
   const toggleRow = (row) => {
     setExpandedRow(expandedRow === row ? null : row);
@@ -143,6 +163,22 @@ export default function Profile() {
                 )}
               </div>
             )}
+          </div>
+
+          {/* AI Drafter Permissions Row */}
+          <div>
+            <div className="w-full h-14 flex items-center justify-between px-5 hover:bg-brand-cream transition">
+              <div className="flex items-center gap-3">
+                <Shield size={20} className="text-brand-orange flex-shrink-0" aria-hidden="true" />
+                <span className="font-sans text-[15px] font-medium text-brand-ink">AI Drafter Permissions</span>
+              </div>
+              <button 
+                onClick={handleToggleConsent}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${hasConsented ? 'bg-brand-green' : 'bg-brand-cream-dk'}`}
+              >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${hasConsented ? 'translate-x-6' : 'translate-x-1'}`} />
+              </button>
+            </div>
           </div>
 
           {/* Log Out Row */}

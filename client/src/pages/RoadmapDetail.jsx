@@ -89,8 +89,21 @@ export default function RoadmapDetail() {
       // Load saved completed steps
       const compKey = id.startsWith('roadmap-') ? `completed-${id}` : `completed-roadmap-${id}`;
       const savedComp = localStorage.getItem(compKey) || localStorage.getItem(`completed-${id}`);
+      let parsedComp = {};
       if (savedComp) {
-        setCompletedSteps(JSON.parse(savedComp));
+        parsedComp = JSON.parse(savedComp);
+        setCompletedSteps(parsedComp);
+      }
+      
+      // Auto-advance to first incomplete step
+      if (data) {
+        const parsedData = JSON.parse(data);
+        if (parsedData.steps) {
+          const firstIncomplete = parsedData.steps.findIndex((_, idx) => !parsedComp[idx]);
+          if (firstIncomplete > 0) {
+            setCurrentStepIdx(firstIncomplete);
+          }
+        }
       }
     } catch (e) {
       console.error(e);
@@ -150,12 +163,8 @@ export default function RoadmapDetail() {
   const handleGrantConsent = async () => {
     try {
       setShowConsentModal(false);
-      await saveConsent(true);
-      setHasConsented(true);
-      if (pendingDraftTask) {
-        await executeDraft(pendingDraftTask);
-        setPendingDraftTask(null);
-      }
+      // Wait a moment then redirect to profile for toggling permissions
+      navigate('/profile');
     } catch (error) {
       console.error('Failed to grant consent:', error);
     }
@@ -386,7 +395,10 @@ export default function RoadmapDetail() {
             <div className="mb-4">
               <button 
                 className="flex items-center gap-2 px-5 py-2.5 bg-brand-orange-lt text-brand-orange hover:bg-brand-orange hover:text-white rounded-pill font-medium text-sm transition-colors"
-                onClick={() => window.open(officialUrl, '_blank')}
+                onClick={() => {
+                  const absoluteUrl = officialUrl.startsWith('http') ? officialUrl : `https://${officialUrl}`;
+                  window.open(absoluteUrl, '_blank');
+                }}
               >
                 <ExternalLink size={16} /> Official Link
               </button>

@@ -1,5 +1,22 @@
 {
   "users": {},
-  "drafts": {},
-  "consents": {}
+  "drafts": {
+    "auto_epi9fa5ri": {
+      "userId": "testuser",
+      "title": "Submit filled enrollment form at the center",
+      "templateType": "Submit filled enrollment form at the center",
+      "content": "# Draft: Submit filled enrollment form at the center\n\n**For:** Aadhaar Card (New / Update)\n\n---\n\nThis is a mock draft document generated because the Groq API is not configured. When a valid API key is added to `.env`, this will generate a properly formatted draft based on your specific details.\n\n**Applicant Details:**\n\n\n---\n\n*This document is auto-generated and should be reviewed before submission.*",
+      "goal": "Aadhaar Card (New / Update)",
+      "createdAt": "2026-08-07T17:01:24.032Z",
+      "id": "auto_epi9fa5ri"
+    }
+  },
+  "consents": {
+    "testuser": {
+      "consented": true,
+      "consentedAt": "2026-08-07T17:00:52.699Z",
+      "email": "testuser@civlynq.in",
+      "name": "CivLynQ Test User"
+    }
+  }
 }
