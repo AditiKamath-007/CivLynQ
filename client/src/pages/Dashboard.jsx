@@ -1,15 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { Compass, Trash2, Plus } from 'lucide-react';
 import ConfirmModal from '../components/ui/ConfirmModal';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [journeys, setJourneys] = useState([]);
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, journeyId: null, journeyTitle: '' });
 
   useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate('/signup', { replace: true });
+    }
+  }, [authLoading, isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (authLoading || !isAuthenticated) return;
     // Simulate initial loading
     const timer = setTimeout(() => {
       const loadedJourneys = [];

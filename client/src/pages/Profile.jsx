@@ -56,7 +56,7 @@ export default function Profile() {
   const handleLogout = async () => {
     try {
       await logout();
-      navigate('/login');
+      navigate('/signup');
     } catch (e) {
       console.error('Logout failed:', e);
     }
@@ -116,11 +116,15 @@ export default function Profile() {
               <div className="px-5 pb-5 pt-2 bg-brand-cream/30 space-y-4 border-t border-brand-cream-dk">
                 <div>
                   <label className="block text-xs text-brand-ink-mute mb-1">Full Name</label>
-                  <input type="text" readOnly value={currentUser?.displayName || 'CivLynQ User'} className="w-full bg-white border border-brand-cream-dk rounded-lg px-3 py-2 text-sm text-brand-ink" />
+                  <input type="text" readOnly value={currentUser?.displayName || 'CivLynQ User'} className="w-full bg-white border border-brand-cream-dk rounded-lg px-3 py-2 text-sm text-brand-ink outline-none" />
                 </div>
                 <div>
                   <label className="block text-xs text-brand-ink-mute mb-1">Email</label>
-                  <input type="email" readOnly value={currentUser?.email || 'user@civlynq.in'} className="w-full bg-white border border-brand-cream-dk rounded-lg px-3 py-2 text-sm text-brand-ink" />
+                  <input type="email" readOnly value={currentUser?.email || 'user@civlynq.in'} className="w-full bg-white border border-brand-cream-dk rounded-lg px-3 py-2 text-sm text-brand-ink outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs text-brand-ink-mute mb-1">Phone Number</label>
+                  <input type="tel" readOnly value={currentUser?.phoneNumber || 'Not provided'} className="w-full bg-white border border-brand-cream-dk rounded-lg px-3 py-2 text-sm text-brand-ink outline-none text-brand-ink-mute italic" />
                 </div>
               </div>
             )}

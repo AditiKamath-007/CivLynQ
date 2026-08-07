@@ -1,29 +1,55 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, User as UserIcon, Phone, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User as UserIcon, Phone, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 export default function Signup() {
   const navigate = useNavigate();
-  const { login } = useAuth(); // Assume login covers both for mockup purposes
+  const { signup, login } = useAuth(); // login is still used for Google auth
   const [showPassword, setShowPassword] = useState(false);
+  
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    
+    if (!fullName.trim() || !email.trim() || !password.trim()) {
+      setError('Please fill in all required fields.');
+      return;
+    }
+    
+    setSubmitting(true);
     try {
-      await login(); // mockup
+      await signup(email, password, fullName);
       navigate('/');
-    } catch (error) {
-      console.error('Failed to sign up:', error);
+    } catch (err) {
+      console.error('Failed to sign up:', err);
+      const code = err?.code || '';
+      if (code.includes('email-already-in-use')) {
+        setError('This email is already registered. Please sign in instead.');
+      } else if (code.includes('weak-password')) {
+        setError('Password should be at least 6 characters.');
+      } else {
+        setError(err.message || 'Failed to create an account. Please try again.');
+      }
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handleGoogleSignup = async () => {
+    setError('');
     try {
       await login();
       navigate('/');
-    } catch (error) {
-      console.error('Failed to sign up with Google:', error);
+    } catch (err) {
+      console.error('Failed to sign up with Google:', err);
+      setError('Google sign-up failed. Please try again.');
     }
   };
 
@@ -52,6 +78,14 @@ export default function Signup() {
           <h2 className="font-display font-bold text-2xl text-brand-ink">Create your account.</h2>
           <p className="text-sm text-brand-ink-mute mt-1 mb-6">It takes less than a minute.</p>
 
+          {/* Error Banner */}
+          {error && (
+            <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 mb-4 text-sm">
+              <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Full Name */}
             <div className="relative">
@@ -62,6 +96,8 @@ export default function Signup() {
                 type="text"
                 placeholder="Full name"
                 required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
                 className="h-11 w-full rounded-lg border border-brand-cream-dk bg-white pl-10 pr-3 font-sans text-[15px] focus:border-brand-orange focus:shadow-pop outline-none transition"
               />
             </div>
@@ -75,23 +111,13 @@ export default function Signup() {
                 type="email"
                 placeholder="Email address"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="h-11 w-full rounded-lg border border-brand-cream-dk bg-white pl-10 pr-3 font-sans text-[15px] focus:border-brand-orange focus:shadow-pop outline-none transition"
               />
             </div>
 
-            {/* Phone */}
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-brand-ink-mute gap-1">
-                <Phone size={18} />
-                <span className="text-[15px] font-sans">🇮🇳 +91</span>
-              </div>
-              <input
-                type="tel"
-                placeholder="Phone number"
-                required
-                className="h-11 w-full rounded-lg border border-brand-cream-dk bg-white pl-[84px] pr-3 font-sans text-[15px] focus:border-brand-orange focus:shadow-pop outline-none transition"
-              />
-            </div>
+
 
             {/* Password */}
             <div className="relative">
@@ -102,6 +128,8 @@ export default function Signup() {
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="h-11 w-full rounded-lg border border-brand-cream-dk bg-white pl-10 pr-10 font-sans text-[15px] focus:border-brand-orange focus:shadow-pop outline-none transition"
               />
               <button
@@ -115,9 +143,10 @@ export default function Signup() {
 
             <button
               type="submit"
-              className="w-full h-11 mt-2 bg-brand-orange hover:bg-brand-orange-dk text-white font-display font-semibold rounded-pill shadow-card transition-all duration-200"
+              disabled={submitting}
+              className="w-full h-11 mt-2 bg-brand-orange hover:bg-brand-orange-dk text-white font-display font-semibold rounded-pill shadow-card transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Create account
+              {submitting ? 'Creating account…' : 'Create account'}
             </button>
           </form>
 

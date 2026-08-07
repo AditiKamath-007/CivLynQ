@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { 
   onAuthStateChanged, 
   signInWithGoogle as fbSignInWithGoogle, 
+  signInWithEmail as fbSignInWithEmail,
+  createUser as fbCreateUser,
   logout as fbLogout,
   getIdToken
 } from '../services/firebase';
@@ -43,6 +45,9 @@ export function AuthProvider({ children }) {
     return unsubscribe;
   }, []);
 
+  /**
+   * Google popup sign-in (existing behavior).
+   */
   const login = async () => {
     setLoading(true);
     try {
@@ -54,6 +59,48 @@ export function AuthProvider({ children }) {
       return result.user;
     } catch (error) {
       console.error('Login error:', error);
+      setAuthToken(null);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Email + password sign-in.
+   */
+  const loginWithEmail = async (email, password) => {
+    setLoading(true);
+    try {
+      const result = await fbSignInWithEmail(email, password);
+      const userToken = await getIdToken(result.user);
+      setAuthToken(userToken);
+      setToken(userToken);
+      setCurrentUser(result.user);
+      return result.user;
+    } catch (error) {
+      console.error('Email login error:', error);
+      setAuthToken(null);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Email + password sign-up (creates account + sets displayName).
+   */
+  const signup = async (email, password, displayName) => {
+    setLoading(true);
+    try {
+      const result = await fbCreateUser(email, password, displayName);
+      const userToken = await getIdToken(result.user);
+      setAuthToken(userToken);
+      setToken(userToken);
+      setCurrentUser(result.user);
+      return result.user;
+    } catch (error) {
+      console.error('Signup error:', error);
       setAuthToken(null);
       throw error;
     } finally {
@@ -82,6 +129,8 @@ export function AuthProvider({ children }) {
     loading,
     isAuthenticated: !!currentUser,
     login,
+    loginWithEmail,
+    signup,
     logout
   };
 

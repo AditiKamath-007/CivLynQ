@@ -1,30 +1,23 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { ArrowRight, Loader2, Send } from 'lucide-react';
+import { ArrowLeft, Target, Loader2, AlertCircle, RefreshCw, Check, Sparkles } from 'lucide-react';
 import { generateQuestions, generateWorkflow } from '../services/api';
-import { STATES } from '../data/states';
-import Card from '../components/ui/Card';
-import Button from '../components/ui/Button';
-import Skeleton from '../components/ui/Skeleton';
-import ErrorState from '../components/ui/ErrorState';
 
 export default function RoadmapQuestions() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const goal = searchParams.get('goal');
+  const rawGoal = searchParams.get('goal');
+  const goal = rawGoal ? decodeURIComponent(rawGoal) : 'your goal';
 
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({});
-  
   const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState(false);
 
   const fetchQuestions = useCallback(async () => {
-    if (!goal) return;
+    if (!rawGoal) return;
     setLoading(true);
     setError(false);
     try {
@@ -40,185 +33,245 @@ export default function RoadmapQuestions() {
     } finally {
       setLoading(false);
     }
-  }, [goal]);
+  }, [rawGoal, goal]);
 
   useEffect(() => {
     fetchQuestions();
   }, [fetchQuestions]);
 
-  const handleSelectOption = (questionId, value) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: value }));
-  };
-
-  const handleNext = async () => {
-    if (currentIndex < questions.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-    } else {
-      // Submit all answers
-      setSubmitting(true);
-      setSubmitError(false);
-      try {
-        const res = await generateWorkflow(goal, answers);
-        if (res && res.success && res.workflow) {
-          const id = `roadmap-${Date.now()}`;
-          localStorage.setItem(id, JSON.stringify(res.workflow));
-          navigate(`/roadmap/${id}`);
+  const handleSelectOption = (questionId, value, isMulti = false) => {
+    if (isMulti) {
+      setAnswers((prev) => {
+        const currentArr = prev[questionId] || [];
+        if (currentArr.includes(value)) {
+          return { ...prev, [questionId]: currentArr.filter((v) => v !== value) };
         } else {
-          throw new Error('Failed to build roadmap');
+          return { ...prev, [questionId]: [...currentArr, value] };
         }
-      } catch (err) {
-        console.error(err);
-        setSubmitError(true);
-        setSubmitting(false);
-      }
+      });
+    } else {
+      setAnswers((prev) => ({ ...prev, [questionId]: value }));
     }
   };
 
-  if (!goal) {
-    return (
-      <div className="min-h-screen bg-slate-50 py-12 px-4 flex flex-col items-center justify-center">
-        <ErrorState message="No goal specified. Please start over." />
-      </div>
-    );
-  }
+  const handleTextChange = (questionId, value) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: value }));
+  };
 
-  if (loading) {
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    try {
+      const res = await generateWorkflow(goal, answers);
+      if (res && res.success && res.workflow) {
+        const id = `roadmap-${Date.now()}`;
+        localStorage.setItem(id, JSON.stringify(res.workflow));
+        navigate(`/roadmap/${id}`);
+      } else {
+        throw new Error('Failed to build roadmap');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to generate roadmap. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Check if all required questions are answered
+  let answeredCount = 0;
+  let requiredCount = 0;
+  let allRequiredAnswered = true;
+
+  questions.forEach((q) => {
+    const isRequired = q.required === true;
+    if (isRequired) requiredCount++;
+    
+    const ans = answers[q.id];
+    let hasAnswer = false;
+    
+    if (Array.isArray(ans)) {
+      hasAnswer = ans.length > 0;
+    } else {
+      hasAnswer = ans !== undefined && ans !== null && String(ans).trim() !== '';
+    }
+
+    if (hasAnswer && isRequired) {
+      answeredCount++;
+    } else if (hasAnswer && !isRequired) {
+      // Just for progress tracking if we count optionals
+      answeredCount++;
+    }
+
+    if (isRequired && !hasAnswer) {
+      allRequiredAnswered = false;
+    }
+  });
+
+  // If there are no explicitly required questions, we might just require all of them for safety, 
+  // or rely on explicit 'required: true' flag. The prompt says: "iterate questions, for each `required: true` question, verify `answers[question.id]` is non-empty".
+  // Let's also count total questions for the progress text.
+  const progressText = `${Object.keys(answers).filter(k => {
+    const a = answers[k];
+    return Array.isArray(a) ? a.length > 0 : String(a).trim() !== '';
+  }).length} of ${questions.length} answered`;
+
+
+  if (!rawGoal) {
     return (
-      <div className="min-h-screen bg-slate-50 py-12 px-4 flex flex-col items-center">
-        <div className="flex justify-center gap-3 mb-8 w-full max-w-2xl">
-          <div className="w-2 h-2 rounded-full bg-slate-200" />
-          <div className="w-2 h-2 rounded-full bg-slate-200" />
-          <div className="w-2 h-2 rounded-full bg-slate-200" />
+      <div className="max-w-3xl mx-auto px-4 md:px-6 py-10">
+        <div className="bg-white rounded-2xl border border-brand-cream-dk shadow-card p-8 text-center max-w-md mx-auto">
+          <AlertCircle size={48} className="text-brand-orange-dk mx-auto" />
+          <h2 className="font-display font-semibold text-xl text-brand-ink mt-4">No goal specified.</h2>
+          <p className="text-sm text-brand-ink-mute mt-2">Please return to the dashboard and start over.</p>
         </div>
-        <Card className="w-full max-w-2xl p-8">
-          <Skeleton variant="text" height="32px" style={{ marginBottom: '1.5rem' }} />
-          <Skeleton variant="rectangular" height="48px" style={{ marginBottom: '0.75rem' }} />
-          <Skeleton variant="rectangular" height="48px" />
-        </Card>
       </div>
     );
   }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-slate-50 py-12 px-4 flex flex-col items-center justify-center">
-        <Card className="w-full max-w-2xl p-8">
-          <ErrorState message="Failed to load questions." onRetry={fetchQuestions} />
-        </Card>
-      </div>
-    );
-  }
-
-  if (submitting) {
-    return (
-      <div className="min-h-screen bg-slate-50 py-12 px-4 flex flex-col items-center justify-center">
-        <Card className="w-full max-w-2xl p-12 flex flex-col items-center justify-center">
-          <Loader2 className="animate-spin text-emerald-600 mb-4 h-10 w-10" />
-          <p className="text-xl font-medium text-slate-900">Building your roadmap…</p>
-        </Card>
-      </div>
-    );
-  }
-
-  if (submitError) {
-    return (
-      <div className="min-h-screen bg-slate-50 py-12 px-4 flex flex-col items-center justify-center">
-        <Card className="w-full max-w-2xl p-8">
-          <ErrorState message="Failed to generate roadmap." onRetry={handleNext} />
-        </Card>
-      </div>
-    );
-  }
-
-  const currentQuestion = questions[currentIndex];
-  const currentValue = answers[currentQuestion.id] || '';
-  const isSelect = currentQuestion.id === 'state' || currentQuestion.id === 'location';
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 flex flex-col items-center">
-      <div className="flex justify-center gap-3 mb-8 w-full max-w-2xl">
-        {questions.map((_, idx) => (
-          <div
-            key={idx}
-            className={`w-2 h-2 rounded-full transition-colors ${idx <= currentIndex ? 'bg-emerald-600' : 'bg-slate-200'}`}
-          />
-        ))}
+    <div className="max-w-full md:max-w-3xl mx-auto px-4 md:px-6 py-10 pb-20">
+      <div className="mb-8">
+        <button 
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-2 text-brand-ink-mute hover:text-brand-orange transition font-sans text-sm"
+        >
+          <ArrowLeft size={18} />
+          Back
+        </button>
+        <h1 className="font-display font-bold text-3xl text-brand-ink mt-2">
+          Let's personalize your journey.
+        </h1>
+        <div className="inline-flex items-center gap-2 bg-brand-cream border border-brand-cream-dk text-brand-ink-mute text-sm font-sans px-4 py-1.5 rounded-pill mt-3">
+          <Target size={14} />
+          {goal}
+        </div>
       </div>
 
-      <Card className="w-full max-w-2xl p-8">
-        <h2 className="text-2xl font-bold text-slate-900 mb-8">{currentQuestion.question}</h2>
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-20">
+          <Loader2 size={40} className="animate-spin text-brand-orange mb-4" />
+          <p className="text-sm text-brand-ink-mute font-sans">Generating your questions…</p>
+        </div>
+      ) : error ? (
+        <div className="bg-white rounded-2xl border border-brand-cream-dk shadow-card p-8 text-center max-w-md mx-auto">
+          <AlertCircle size={48} className="text-brand-orange-dk mx-auto" />
+          <h2 className="font-display font-semibold text-xl text-brand-ink mt-4">Couldn't generate questions.</h2>
+          <p className="text-sm text-brand-ink-mute mt-2">We had trouble reaching the AI. Check your connection and try again.</p>
+          <button 
+            onClick={fetchQuestions}
+            className="bg-brand-orange hover:bg-brand-orange-dk text-white font-display font-semibold px-5 h-10 rounded-pill mt-6 flex items-center gap-2 mx-auto transition"
+          >
+            <RefreshCw size={16} />
+            Retry
+          </button>
+        </div>
+      ) : (
+        <>
+          <div className="space-y-4">
+            {questions.map((q, idx) => {
+              const val = answers[q.id];
+              const isMulti = q.inputType === 'multiselect' || q.inputType === 'documents';
 
-        <div className="mb-8">
-          {isSelect ? (
-            <select
-              className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-              value={currentValue}
-              onChange={(e) => handleSelectOption(currentQuestion.id, e.target.value)}
-            >
-              <option value="" disabled>
-                Select an option
-              </option>
-              {STATES.map((state) => (
-                <option key={state} value={state}>
-                  {state}
-                </option>
-              ))}
-            </select>
-          ) : (currentQuestion.type === 'radio' || currentQuestion.type === 'single-choice' || currentQuestion.type === 'multi-choice') ? (
-            <div className="flex flex-col gap-3">
-              {(currentQuestion.options || []).map((opt) => {
-                const isSelected = currentValue === opt;
-                return (
-                  <button
-                    key={opt}
-                    className={`flex items-center gap-3 p-4 w-full rounded-xl transition-colors text-left ${isSelected ? 'bg-emerald-50 border-emerald-500 ring-1 ring-emerald-500' : 'bg-white border border-slate-200 hover:border-emerald-500'}`}
-                    onClick={() => handleSelectOption(currentQuestion.id, opt)}
-                  >
-                    <div className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 ${isSelected ? 'border-emerald-600' : 'border-slate-300'}`}>
-                      {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-emerald-600" />}
+              return (
+                <div key={q.id} className="bg-white rounded-card border border-brand-cream-dk shadow-card p-4 md:p-6 hover:shadow-card-hov transition-all duration-200">
+                  <div className="flex gap-4">
+                    <div className="w-8 h-8 rounded-full bg-brand-orange-lt text-brand-orange font-display font-semibold flex items-center justify-center text-sm flex-shrink-0 mt-1">
+                      {idx + 1}
                     </div>
-                    <span className="text-base text-slate-900">{opt}</span>
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="relative flex items-center">
-              <input
-                type="text"
-                className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl pl-4 pr-12 text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-                placeholder="Type your answer here..."
-                value={currentValue}
-                onChange={(e) => handleSelectOption(currentQuestion.id, e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && currentValue.trim()) {
-                    handleNext();
-                  }
-                }}
-              />
-              <button
-                className="absolute right-2 p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg disabled:opacity-50 disabled:text-slate-400 disabled:hover:bg-transparent transition-colors"
-                disabled={!currentValue.trim()}
-                onClick={handleNext}
-              >
-                <Send size={18} />
-              </button>
-            </div>
-          )}
-        </div>
+                    <div className="flex-1">
+                      <h3 className="font-display font-semibold text-lg text-brand-ink">
+                        {q.question}
+                        {q.required && <span className="text-red-500 ml-1">*</span>}
+                      </h3>
+                      {(q.helper || q.description) && (
+                        <p className="text-sm text-brand-ink-mute mt-1 font-sans">{q.helper || q.description}</p>
+                      )}
 
-        <div className="flex justify-end">
-          <Button
-            variant="primary"
-            iconOnly
-            icon={ArrowRight}
-            onClick={handleNext}
-            disabled={!currentValue.trim()}
-            className="w-12 h-12 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 disabled:hover:bg-emerald-600 transition-colors"
-            aria-label="Next"
-          />
-        </div>
-      </Card>
+                      <div className="mt-4">
+                        {q.inputType === 'documents' && q.documents ? (
+                          <div className="space-y-2">
+                            {q.documents.map((doc) => {
+                              const selectedArr = Array.isArray(val) ? val : [];
+                              const isSelected = selectedArr.includes(doc.id);
+                              return (
+                                <div 
+                                  key={doc.id}
+                                  onClick={() => handleSelectOption(q.id, doc.id, true)}
+                                  className="flex items-center gap-3 px-4 py-3 bg-brand-bone border border-brand-cream-dk rounded-lg cursor-pointer hover:bg-brand-cream transition"
+                                >
+                                  <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${isSelected ? 'bg-brand-green-accent border-brand-green-accent' : 'border-brand-cream-dk'}`}>
+                                    {isSelected && <Check size={14} className="text-white" />}
+                                  </div>
+                                  <span className="font-sans text-[15px] text-brand-ink flex-1">{doc.name}</span>
+                                  {doc.required && (
+                                    <span className="bg-red-50 text-red-600 text-[11px] font-medium px-2 py-0.5 rounded-pill ml-auto">
+                                      Required
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : q.options && q.options.length > 0 ? (
+                          <div className="flex flex-col gap-2">
+                            {q.options.map((opt) => {
+                              const isSelected = isMulti 
+                                ? (Array.isArray(val) && val.includes(opt))
+                                : val === opt;
+                              
+                              return (
+                                <div 
+                                  key={opt}
+                                  onClick={() => handleSelectOption(q.id, opt, isMulti)}
+                                  className={`flex items-center justify-between w-full text-left px-4 py-3 rounded-lg border font-sans text-[15px] transition cursor-pointer ${
+                                    isSelected 
+                                      ? 'bg-brand-orange text-white border-brand-orange font-medium shadow-card' 
+                                      : 'bg-brand-bone border-brand-cream-dk hover:bg-brand-orange-lt hover:border-brand-orange text-brand-ink'
+                                  }`}
+                                >
+                                  <span>{opt}</span>
+                                  {isSelected && <Check size={16} />}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : q.inputType === 'textarea' ? (
+                          <textarea
+                            className="w-full h-28 resize-none bg-white border border-brand-cream-dk rounded-lg p-3 font-sans text-[15px] focus:border-brand-orange focus:shadow-pop outline-none transition"
+                            placeholder={q.placeholder || "Provide details…"}
+                            value={val || ''}
+                            onChange={(e) => handleTextChange(q.id, e.target.value)}
+                          />
+                        ) : (
+                          <input
+                            type="text"
+                            className="w-full h-11 bg-white border border-brand-cream-dk rounded-lg px-3 font-sans text-[15px] focus:border-brand-orange focus:shadow-pop outline-none transition"
+                            placeholder={q.placeholder || "Type your answer…"}
+                            value={val || ''}
+                            onChange={(e) => handleTextChange(q.id, e.target.value)}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="sticky bottom-0 left-0 right-0 bg-brand-bone/95 backdrop-blur-sm border-t border-brand-cream-dk py-4 -mx-4 md:-mx-6 px-4 md:px-6 mt-8 flex items-center justify-between z-10">
+            <span className="text-sm text-brand-ink-mute font-sans">{progressText}</span>
+            <button
+              onClick={handleSubmit}
+              disabled={!allRequiredAnswered || submitting}
+              className="bg-brand-orange hover:bg-brand-orange-dk text-white font-display font-semibold px-6 h-11 rounded-pill shadow-card hover:shadow-card-hov flex items-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {submitting ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
+              {submitting ? 'Generating...' : 'Generate Roadmap'}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

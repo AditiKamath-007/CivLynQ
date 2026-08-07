@@ -1,14 +1,20 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { ChevronRight } from 'lucide-react';
 import SearchBar from '../components/ui/SearchBar';
 import { procedures } from '../data/procedures';
 
 export default function Home() {
   const navigate = useNavigate();
-  // Using activeTab just in case we need to keep mobile toggle behavior,
-  // but we can also just stack them on mobile natively with Tailwind.
+  const { isAuthenticated, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('simple');
+
+  React.useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      navigate('/signup', { replace: true });
+    }
+  }, [loading, isAuthenticated, navigate]);
 
   const handleSearch = (query) => {
     if (query && typeof query === 'string' && query.trim()) {

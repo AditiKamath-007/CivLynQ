@@ -1,29 +1,49 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, loginWithEmail } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    if (!email.trim() || !password.trim()) {
+      setError('Please enter both email and password.');
+      return;
+    }
+    setSubmitting(true);
     try {
-      await login(); // mockup
+      await loginWithEmail(email, password);
       navigate('/');
-    } catch (error) {
-      console.error('Failed to sign in:', error);
+    } catch (err) {
+      console.error('Failed to sign in:', err);
+      const code = err?.code || '';
+      if (code.includes('user-not-found') || code.includes('wrong-password') || code.includes('invalid-credential')) {
+        setError('Invalid email or password. Please try again.');
+      } else {
+        setError(err.message || 'Sign-in failed. Please try again.');
+      }
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handleGoogleLogin = async () => {
+    setError('');
     try {
       await login();
       navigate('/');
-    } catch (error) {
-      console.error('Failed to log in with Google:', error);
+    } catch (err) {
+      console.error('Failed to log in with Google:', err);
+      setError('Google sign-in failed. Please try again.');
     }
   };
 
@@ -52,6 +72,14 @@ export default function Login() {
           <h2 className="font-display font-bold text-2xl text-brand-ink">Welcome back.</h2>
           <p className="text-sm text-brand-ink-mute mt-1 mb-6">Sign in to continue your journey.</p>
 
+          {/* Error Banner */}
+          {error && (
+            <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 mb-4 text-sm">
+              <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email */}
             <div className="relative">
@@ -62,6 +90,8 @@ export default function Login() {
                 type="email"
                 placeholder="Email address"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="h-11 w-full rounded-lg border border-brand-cream-dk bg-white pl-10 pr-3 font-sans text-[15px] focus:border-brand-orange focus:shadow-pop outline-none transition"
               />
             </div>
@@ -75,6 +105,8 @@ export default function Login() {
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="h-11 w-full rounded-lg border border-brand-cream-dk bg-white pl-10 pr-10 font-sans text-[15px] focus:border-brand-orange focus:shadow-pop outline-none transition"
               />
               <button
@@ -88,9 +120,10 @@ export default function Login() {
 
             <button
               type="submit"
-              className="w-full h-11 mt-2 bg-brand-orange hover:bg-brand-orange-dk text-white font-display font-semibold rounded-pill shadow-card transition-all duration-200"
+              disabled={submitting}
+              className="w-full h-11 mt-2 bg-brand-orange hover:bg-brand-orange-dk text-white font-display font-semibold rounded-pill shadow-card transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Sign in
+              {submitting ? 'Signing in…' : 'Sign in'}
             </button>
           </form>
 
