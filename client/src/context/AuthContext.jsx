@@ -1,0 +1,93 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { 
+  onAuthStateChanged, 
+  signInWithGoogle as fbSignInWithGoogle, 
+  logout as fbLogout,
+  getIdToken
+} from '../services/firebase';
+import { setAuthToken } from '../services/api';
+
+const AuthContext = createContext();
+
+export function useAuth() {
+  return useContext(AuthContext);
+}
+
+export function AuthProvider({ children }) {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(async (user) => {
+      if (user) {
+        try {
+          const userToken = await getIdToken(user);
+          setAuthToken(userToken);
+          setToken(userToken);
+          setCurrentUser(user);
+        } catch (error) {
+          console.error('Error fetching token:', error);
+          setAuthToken(null);
+          setToken(null);
+          setCurrentUser(null);
+        }
+      } else {
+        setAuthToken(null);
+        setToken(null);
+        setCurrentUser(null);
+      }
+      setLoading(false);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  const login = async () => {
+    setLoading(true);
+    try {
+      const result = await fbSignInWithGoogle();
+      const userToken = await getIdToken(result.user);
+      setAuthToken(userToken);
+      setToken(userToken);
+      setCurrentUser(result.user);
+      return result.user;
+    } catch (error) {
+      console.error('Login error:', error);
+      setAuthToken(null);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const logout = async () => {
+    setLoading(true);
+    try {
+      await fbLogout();
+      setAuthToken(null);
+      setToken(null);
+      setCurrentUser(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const value = {
+    currentUser,
+    token,
+    loading,
+    isAuthenticated: !!currentUser,
+    login,
+    logout
+  };
+
+  return (
+    <AuthContext.Provider value={value}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
+}

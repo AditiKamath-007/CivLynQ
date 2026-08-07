@@ -1,13 +1,20 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import './Login.css';
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleGoogleLogin = () => {
-    console.log('Google login clicked');
-    navigate('/');
+  const handleGoogleLogin = async () => {
+    try {
+      console.log('Google login clicked');
+      await login();
+      navigate('/');
+    } catch (error) {
+      console.error('Failed to log in:', error);
+    }
   };
 
   return (

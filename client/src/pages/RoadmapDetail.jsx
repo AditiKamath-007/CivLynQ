@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Clock, IndianRupee, ListChecks, ChevronDown, ChevronUp, Check, ExternalLink, PenTool } from 'lucide-react';
+import { Clock, IndianRupee, ListChecks, ChevronDown, ChevronUp, Check, ExternalLink, PenTool, Shield, X, Sparkles, Save } from 'lucide-react';
 import { toArray } from '../utils/toArray';
-import { draftDocument } from '../services/api';
+import { draftDocument, checkConsent, saveConsent, saveUserDraft } from '../services/api';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Chip from '../components/ui/Chip';
 import Tag from '../components/ui/Tag';
 import ErrorState from '../components/ui/ErrorState';
 import DraftModal from '../components/ui/DraftModal';
+import { useAuth } from '../context/AuthContext';
 import './RoadmapDetail.css';
 
 function CollapsibleSection({ title, content }) {
@@ -46,11 +47,32 @@ export default function RoadmapDetail() {
   const [completedSteps, setCompletedSteps] = useState({});
   const [checkedItems, setCheckedItems] = useState({});
 
-  // Draft modal state
+  const { currentUser } = useAuth();
+
+  // Draft modal state (partner's DraftModal component)
   const [draftModalOpen, setDraftModalOpen] = useState(false);
   const [draftTitle, setDraftTitle] = useState('');
   const [draftContent, setDraftContent] = useState('');
   const [draftLoading, setDraftLoading] = useState(false);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [draftSaved, setDraftSaved] = useState(false);
+
+  // AI Drafter consent state
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  const [hasConsented, setHasConsented] = useState(null);
+  const [pendingDraftTask, setPendingDraftTask] = useState(null);
+
+  useEffect(() => {
+    if (currentUser) {
+      checkConsent()
+        .then(res => {
+          if (res.success) {
+            setHasConsented(res.consented);
+          }
+        })
+        .catch(err => console.error('Error checking consent:', err));
+    }
+  }, [currentUser]);
 
   useEffect(() => {
     try {
@@ -91,10 +113,12 @@ export default function RoadmapDetail() {
     });
   };
 
-  const handleDraftClick = async (taskStr) => {
+  // Generates the draft using the API and opens the DraftModal
+  const executeDraft = async (taskStr) => {
     setDraftTitle(taskStr);
     setDraftContent('');
     setDraftLoading(true);
+    setDraftSaved(false);
     setDraftModalOpen(true);
     try {
       const res = await draftDocument(taskStr, {}, workflow?.goal || workflow?.title || 'Civic Process');
@@ -108,6 +132,61 @@ export default function RoadmapDetail() {
       setDraftContent('Error connecting to draft generation service.');
     } finally {
       setDraftLoading(false);
+    }
+  };
+
+  // Main click handler — checks auth and consent before drafting
+  const handleDraftClick = async (taskStr) => {
+    if (!currentUser) {
+      navigate('/login');
+      return;
+    }
+
+    if (hasConsented) {
+      await executeDraft(taskStr);
+    } else {
+      setPendingDraftTask(taskStr);
+      setShowConsentModal(true);
+    }
+  };
+
+  const handleGrantConsent = async () => {
+    try {
+      setShowConsentModal(false);
+      await saveConsent(true);
+      setHasConsented(true);
+      if (pendingDraftTask) {
+        await executeDraft(pendingDraftTask);
+        setPendingDraftTask(null);
+      }
+    } catch (error) {
+      console.error('Failed to grant consent:', error);
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    if (!draftContent || draftLoading) return;
+    setIsSavingDraft(true);
+    try {
+      const res = await saveUserDraft({
+        title: draftTitle,
+        templateType: draftTitle,
+        content: draftContent,
+        goal: workflow?.goal || workflow?.title || ''
+      });
+      if (res.success) {
+        setDraftSaved(true);
+        setTimeout(() => {
+          setDraftModalOpen(false);
+        }, 1500);
+      } else {
+        alert('Failed to save draft.');
+      }
+    } catch (error) {
+      console.error('Error saving draft:', error);
+      alert('Error saving draft: ' + error.message);
+    } finally {
+      setIsSavingDraft(false);
     }
   };
 
@@ -349,13 +428,75 @@ export default function RoadmapDetail() {
         </Card>
       </main>
 
+      {/* Partner's DraftModal — enhanced with save-to-profile */}
       <DraftModal
         isOpen={draftModalOpen}
         onClose={() => setDraftModalOpen(false)}
         title={draftTitle}
         draftText={draftContent}
+        onChange={(val) => setDraftContent(val)}
         loading={draftLoading}
+        onSave={handleSaveDraft}
+        isSaving={isSavingDraft}
+        saved={draftSaved}
       />
+
+      {/* AI Consent Modal */}
+      {showConsentModal && (
+        <div className="modal-overlay">
+          <div className="modal-card">
+            <div className="modal-header">
+              <h2 className="text-h2 modal-title" style={{ color: 'var(--ink)' }}>
+                <Shield className="consent-scope-icon" style={{ verticalAlign: 'middle', marginRight: 'var(--space-2)' }} /> AI Drafter Permissions
+              </h2>
+              <button className="modal-close-btn" onClick={() => setShowConsentModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="modal-body text-body">
+              <p>To draft <strong>{pendingDraftTask}</strong> on your behalf, the AI Drafter requires your authorization:</p>
+              
+              <div className="consent-scope-list">
+                <div className="consent-scope-item">
+                  <div className="consent-scope-icon"><Check size={16} /></div>
+                  <div>
+                    <strong>Profile Integration</strong>
+                    <p className="text-caption" style={{ margin: 0 }}>Autofills templates with your name, email, and contact info if available.</p>
+                  </div>
+                </div>
+                
+                <div className="consent-scope-item">
+                  <div className="consent-scope-icon"><Check size={16} /></div>
+                  <div>
+                    <strong>AI Generation & Processing</strong>
+                    <p className="text-caption" style={{ margin: 0 }}>Uses secure AI processing to compose drafts relevant to <em>{workflow.goal || workflow.title}</em>.</p>
+                  </div>
+                </div>
+                
+                <div className="consent-scope-item">
+                  <div className="consent-scope-icon"><Check size={16} /></div>
+                  <div>
+                    <strong>Cloud Database Storage</strong>
+                    <p className="text-caption" style={{ margin: 0 }}>Saves the completed draft securely to your profile drafts database.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="consent-warning">
+                By granting permissions, you authorize the AI Drafter to construct this draft. You retain full ownership and can review/edit the document before finalized usage.
+              </div>
+            </div>
+            <div className="modal-footer">
+              <Button variant="ghost" onClick={() => setShowConsentModal(false)}>
+                Cancel
+              </Button>
+              <Button variant="primary" onClick={handleGrantConsent}>
+                Grant Permissions
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

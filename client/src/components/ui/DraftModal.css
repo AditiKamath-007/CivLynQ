@@ -102,3 +102,17 @@
   padding: var(--space-4) var(--space-6);
   border-top: 1px solid var(--border-color, #e5e7eb);
 }
+
+.draft-content-textarea {
+  width: 100%;
+  min-height: 300px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-body, #374151);
+  background-color: var(--bg-subtle, #f9fafb);
+  padding: var(--space-4);
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--border-color, #e5e7eb);
+  resize: vertical;
+}

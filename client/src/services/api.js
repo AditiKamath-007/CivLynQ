@@ -9,16 +9,36 @@ class ApiError extends Error {
   }
 }
 
-async function request(endpoint, body) {
-  try {
-    const response = await fetch(`${BASE_URL}${endpoint}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
+let apiAuthToken = null;
 
+/**
+ * Configure the active auth token for API requests.
+ * @param {string|null} token 
+ */
+export function setAuthToken(token) {
+  apiAuthToken = token;
+}
+
+async function request(endpoint, body = null, method = 'POST') {
+  try {
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+
+    if (apiAuthToken) {
+      headers['Authorization'] = `Bearer ${apiAuthToken}`;
+    }
+
+    const config = {
+      method,
+      headers,
+    };
+
+    if (body && method !== 'GET') {
+      config.body = JSON.stringify(body);
+    }
+
+    const response = await fetch(`${BASE_URL}${endpoint}`, config);
     const data = await response.json();
 
     if (!response.ok || !data.success) {
@@ -33,7 +53,6 @@ async function request(endpoint, body) {
   } catch (error) {
     if (error instanceof ApiError) throw error;
 
-    // Network errors, JSON parse errors, etc.
     throw new ApiError(
       error.message || 'Network error — please check your connection',
       0,
@@ -44,8 +63,6 @@ async function request(endpoint, body) {
 
 /**
  * Generate personalized questions for a user's goal.
- * @param {string} goal - The bureaucratic process the user needs help with
- * @returns {Promise<{success: boolean, questions: Array<{id: string, question: string, type: string, options: string[]}>}>}
  */
 export async function generateQuestions(goal) {
   return request('/generate-questions', { goal });
@@ -53,9 +70,6 @@ export async function generateQuestions(goal) {
 
 /**
  * Generate a step-by-step workflow/roadmap.
- * @param {string} goal - The user's goal
- * @param {Object} answers - Key-value map of question IDs to answers
- * @returns {Promise<{success: boolean, workflow: Object}>}
  */
 export async function generateWorkflow(goal, answers) {
   return request('/generate-workflow', { goal, answers });
@@ -63,11 +77,6 @@ export async function generateWorkflow(goal, answers) {
 
 /**
  * Ask the LynQbot helper a question.
- * @param {string} question - The user's question
- * @param {Object|null} context - Optional context from a roadmap step
- * @param {string} [context.stepTitle] - Current step title
- * @param {string[]} [context.requiredDocuments] - Documents for this step
- * @returns {Promise<{success: boolean, answer: string}>}
  */
 export async function askHelper(question, context = null) {
   return request('/ask-helper', { question, context });
@@ -75,11 +84,35 @@ export async function askHelper(question, context = null) {
 
 /**
  * Draft a document based on a template.
- * @param {string} templateType - The type of document to draft
- * @param {Object} intakeAnswers - User's intake answers
- * @param {string} goal - The user's goal
- * @returns {Promise<{success: boolean, draft: string}>}
  */
 export async function draftDocument(templateType, intakeAnswers, goal) {
   return request('/draft-document', { templateType, intakeAnswers, goal });
+}
+
+/**
+ * Save user consent for AI drafting.
+ */
+export async function saveConsent(consented) {
+  return request('/user/consent', { consented });
+}
+
+/**
+ * Retrieve user consent status.
+ */
+export async function checkConsent() {
+  return request('/user/consent', null, 'GET');
+}
+
+/**
+ * Fetch all saved drafts for the logged-in user.
+ */
+export async function getUserDrafts() {
+  return request('/user/drafts', null, 'GET');
+}
+
+/**
+ * Save a new draft.
+ */
+export async function saveUserDraft(draftData) {
+  return request('/user/drafts', draftData);
 }

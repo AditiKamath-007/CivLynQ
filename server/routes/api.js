@@ -2,9 +2,12 @@ const express = require('express');
 const router = express.Router();
 const groqService = require('../services/groqService');
 const mockWorkflows = require('../data/mockWorkflows');
+const { verifyToken } = require('../middleware/auth');
+const { db } = require('../services/firebaseService');
 
+// Protected AI Routes
 // POST /api/generate-questions
-router.post('/generate-questions', async (req, res) => {
+router.post('/generate-questions', verifyToken, async (req, res) => {
   try {
     const { goal } = req.body;
     const result = await groqService.generateIntakeQuestions(goal);
@@ -16,7 +19,7 @@ router.post('/generate-questions', async (req, res) => {
 });
 
 // POST /api/generate-workflow
-router.post('/generate-workflow', async (req, res) => {
+router.post('/generate-workflow', verifyToken, async (req, res) => {
   try {
     const { goal, answers } = req.body;
     const result = await groqService.generateWorkflow(goal, answers);
@@ -24,14 +27,13 @@ router.post('/generate-workflow', async (req, res) => {
   } catch (error) {
     console.error('Error generating workflow. Falling back to mock data:', error);
     // CRITICAL FALLBACK: return a static JSON object from local mockWorkflows
-    // N.B: Since mockWorkflows exports a getMockWorkflow function that returns an object from its static arrays
     const fallback = mockWorkflows.getMockWorkflow(req.body.goal, req.body.answers);
     res.json(fallback);
   }
 });
 
 // POST /api/ask-helper
-router.post('/ask-helper', async (req, res) => {
+router.post('/ask-helper', verifyToken, async (req, res) => {
   try {
     const { question, context } = req.body;
     const answer = await groqService.askHelper(question, context);
@@ -43,14 +45,91 @@ router.post('/ask-helper', async (req, res) => {
 });
 
 // POST /api/draft-document
-router.post('/draft-document', async (req, res) => {
+router.post('/draft-document', verifyToken, async (req, res) => {
   try {
     const { templateType, intakeAnswers, goal } = req.body;
-    const document = await groqService.draftDocument(templateType, intakeAnswers, goal);
-    res.json({ document });
+    const draft = await groqService.draftDocument(templateType, intakeAnswers, goal);
+    res.json({ success: true, draft });
   } catch (error) {
     console.error('Error drafting document:', error);
-    res.status(500).json({ error: 'Failed to draft document' });
+    res.status(500).json({ success: false, error: 'Failed to draft document' });
+  }
+});
+
+// User Database Routes
+// POST /api/user/consent
+router.post('/user/consent', verifyToken, async (req, res) => {
+  try {
+    const { consented } = req.body;
+    if (consented === undefined) {
+      return res.status(400).json({ success: false, message: 'Consented boolean is required' });
+    }
+
+    await db.collection('consents').doc(req.user.uid).set({
+      consented,
+      consentedAt: new Date().toISOString(),
+      email: req.user.email || null,
+      name: req.user.name || null
+    });
+
+    res.json({ success: true, message: 'Consent stored successfully' });
+  } catch (error) {
+    console.error('Error in /user/consent:', error);
+    res.status(500).json({ success: false, message: 'Failed to store consent' });
+  }
+});
+
+// GET /api/user/consent
+router.get('/user/consent', verifyToken, async (req, res) => {
+  try {
+    const doc = await db.collection('consents').doc(req.user.uid).get();
+    if (!doc.exists) {
+      return res.json({ success: true, consented: false });
+    }
+    res.json({ success: true, consented: doc.data().consented });
+  } catch (error) {
+    console.error('Error getting consent:', error);
+    res.status(500).json({ success: false, message: 'Failed to check consent' });
+  }
+});
+
+// GET /api/user/drafts
+router.get('/user/drafts', verifyToken, async (req, res) => {
+  try {
+    const snapshot = await db.collection('drafts').where('userId', '==', req.user.uid).get();
+    const drafts = [];
+    snapshot.forEach(doc => {
+      drafts.push({ id: doc.id, ...doc.data() });
+    });
+    res.json({ success: true, drafts });
+  } catch (error) {
+    console.error('Error in GET /user/drafts:', error);
+    res.status(500).json({ success: false, message: 'Failed to retrieve drafts' });
+  }
+});
+
+// POST /api/user/drafts
+router.post('/user/drafts', verifyToken, async (req, res) => {
+  try {
+    const { title, templateType, content, goal } = req.body;
+    if (!title || !content) {
+      return res.status(400).json({ success: false, message: 'Title and content are required' });
+    }
+
+    const newDraft = {
+      userId: req.user.uid,
+      title,
+      templateType: templateType || 'Custom Draft',
+      content,
+      goal: goal || '',
+      createdAt: new Date().toISOString()
+    };
+
+    const docRef = await db.collection('drafts').add(newDraft);
+    res.json({ success: true, id: docRef.id, draft: newDraft });
+  } catch (error) {
+    console.error('Error in POST /user/drafts:', error);
+    res.status(500).json({ success: false, message: 'Failed to save draft' });
   }
 });
 
