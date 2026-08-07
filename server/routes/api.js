@@ -7,7 +7,7 @@ const { db } = require('../services/firebaseService');
 
 // Protected AI Routes
 // POST /api/generate-questions
-router.post('/generate-questions', verifyToken, async (req, res) => {
+router.post('/generate-questions', async (req, res) => {
   try {
     const { goal } = req.body;
     const result = await groqService.generateIntakeQuestions(goal);
@@ -20,7 +20,7 @@ router.post('/generate-questions', verifyToken, async (req, res) => {
 });
 
 // POST /api/generate-workflow
-router.post('/generate-workflow', verifyToken, async (req, res) => {
+router.post('/generate-workflow', async (req, res) => {
   try {
     const { goal, answers } = req.body;
     const result = await groqService.generateWorkflow(goal, answers);
@@ -35,7 +35,7 @@ router.post('/generate-workflow', verifyToken, async (req, res) => {
 });
 
 // POST /api/ask-helper
-router.post('/ask-helper', verifyToken, async (req, res) => {
+router.post('/ask-helper', async (req, res) => {
   try {
     const { question, context } = req.body;
     const answer = await groqService.askHelper(question, context);
@@ -48,7 +48,7 @@ router.post('/ask-helper', verifyToken, async (req, res) => {
 });
 
 // POST /api/draft-document
-router.post('/draft-document', verifyToken, async (req, res) => {
+router.post('/draft-document', async (req, res) => {
   try {
     const { templateType, intakeAnswers, goal } = req.body;
     const draft = await groqService.draftDocument(templateType, intakeAnswers, goal);
