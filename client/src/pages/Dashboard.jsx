@@ -78,16 +78,8 @@ const Dashboard = () => {
       <div className="max-w-6xl mx-auto px-6 py-10">
         
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="mb-8">
           <h1 className="font-display font-bold text-3xl text-brand-ink">Dashboard</h1>
-          <button 
-            onClick={() => navigate('/')}
-            className="flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dk text-white font-semibold font-display text-[15px] px-4 h-10 rounded-pill shadow-card hover:shadow-card-hov transition-all duration-200"
-          >
-            <Plus size={18} aria-hidden="true" />
-            <span className="hidden sm:inline">New Journey</span>
-            <span className="sm:hidden">New</span>
-          </button>
         </div>
 
         {loading ? (

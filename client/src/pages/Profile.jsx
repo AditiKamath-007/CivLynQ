@@ -122,10 +122,6 @@ export default function Profile() {
                   <label className="block text-xs text-brand-ink-mute mb-1">Email</label>
                   <input type="email" readOnly value={currentUser?.email || 'user@civlynq.in'} className="w-full bg-white border border-brand-cream-dk rounded-lg px-3 py-2 text-sm text-brand-ink outline-none" />
                 </div>
-                <div>
-                  <label className="block text-xs text-brand-ink-mute mb-1">Phone Number</label>
-                  <input type="tel" readOnly value={currentUser?.phoneNumber || 'Not provided'} className="w-full bg-white border border-brand-cream-dk rounded-lg px-3 py-2 text-sm text-brand-ink outline-none text-brand-ink-mute italic" />
-                </div>
               </div>
             )}
           </div>
