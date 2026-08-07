@@ -1,11 +1,12 @@
 import { NavLink } from 'react-router-dom';
-import { Home, LayoutGrid, Sparkles, LayoutDashboard } from 'lucide-react';
+import { Home, LayoutGrid, Sparkles, LayoutDashboard, User } from 'lucide-react';
 
 const TABS = [
   { path: '/', label: 'Home', icon: Home },
   { path: '/schemes', label: 'Schemes', icon: LayoutGrid },
   { path: '/ai', label: 'AI', icon: Sparkles },
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/profile', label: 'Profile', icon: User },
 ];
 
 export default function MobileBottomNav() {

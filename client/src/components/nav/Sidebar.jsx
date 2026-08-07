@@ -9,8 +9,9 @@ const NAV_ITEMS = [
   { path: '/schemes', label: 'Schemes', icon: LayoutGrid },
   { path: '/ai', label: 'AI', icon: Sparkles },
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/profile', label: 'Profile', icon: User },
 ];
+
+const PROFILE_ITEM = { path: '/profile', label: 'Profile', icon: User };
 
 export default function Sidebar() {
   const [open, setOpen] = useState(false);
@@ -40,8 +41,8 @@ export default function Sidebar() {
         )}
       </div>
 
-      {/* Nav Items */}
-      <nav className="flex-1 flex flex-col">
+      {/* Main Nav Items */}
+      <nav className="flex flex-col">
         {NAV_ITEMS.map((item) => {
           const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
           
@@ -56,8 +57,17 @@ export default function Sidebar() {
         })}
       </nav>
 
-      <div className="mt-auto mb-4">
-        <div className="h-px bg-white/15 mx-3" />
+      {/* Spacer pushes Profile to bottom */}
+      <div className="flex-1" />
+
+      {/* Profile — pinned to bottom-left */}
+      <div className="mb-4">
+        <div className="h-px bg-white/15 mx-3 mb-3" />
+        <NavItem
+          item={PROFILE_ITEM}
+          isActive={location.pathname === '/profile'}
+          open={open}
+        />
       </div>
     </aside>
   );

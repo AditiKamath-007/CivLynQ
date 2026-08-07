@@ -25,12 +25,6 @@ export default function Topbar({ onOpenDrawer }) {
       </div>
 
       <div className="flex items-center gap-3 md:gap-4">
-        <Link
-          to="/profile"
-          className="md:hidden w-8 h-8 rounded-full bg-brand-green text-white font-display font-bold text-xs flex items-center justify-center flex-shrink-0"
-        >
-          CU
-        </Link>
         
         <button
           onClick={() => navigate('/')}
