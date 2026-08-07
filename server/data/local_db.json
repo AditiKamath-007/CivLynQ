@@ -9,6 +9,15 @@
       "goal": "Aadhaar Card (New / Update)",
       "createdAt": "2026-08-07T17:01:24.032Z",
       "id": "auto_epi9fa5ri"
+    },
+    "auto_3l0oqhehh": {
+      "userId": "testuser",
+      "title": "Fill the application form completely",
+      "templateType": "Fill the application form completely",
+      "content": "# Draft: Fill the application form completely\n\n**For:** Caste Certificate\n\n---\n\nThis is a mock draft document generated because the Groq API is not configured. When a valid API key is added to `.env`, this will generate a properly formatted draft based on your specific details.\n\n**Applicant Details:**\n\n\n---\n\n*This document is auto-generated and should be reviewed before submission.*",
+      "goal": "Caste Certificate",
+      "createdAt": "2026-08-07T17:33:22.409Z",
+      "id": "auto_3l0oqhehh"
     }
   },
   "consents": {

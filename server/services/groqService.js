@@ -7,7 +7,7 @@ if (!groq) {
   console.warn('GROQ_API_KEY is missing. Using mock data fallback.');
 }
 
-const MODEL = 'llama3-70b-8192';
+const MODEL = 'llama-3.1-8b-instant';
 
 async function generateQuestions(goal) {
   try {
@@ -103,6 +103,7 @@ Generate a JSON object with a single key "answer" containing your response as a 
     const result = JSON.parse(completion.choices[0].message.content);
     return result.answer;
   } catch (error) {
+    console.error('Groq askHelper Error:', error.message || error);
     console.warn('Falling back to mock helper answer');
     return mockWorkflows.getMockHelperAnswer(question, context);
   }
