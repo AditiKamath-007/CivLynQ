@@ -1,0 +1,13 @@
+.layout-content {
+  min-height: 100vh;
+  padding-bottom: calc(var(--tab-height) + var(--space-4));
+}
+
+@media (min-width: 768px) {
+  .layout-content {
+    padding-bottom: 0;
+  }
+  .layout-content.sidebar-active {
+    margin-left: 240px;
+  }
+}

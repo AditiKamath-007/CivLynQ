@@ -1,0 +1,120 @@
+/* Default state is hidden on mobile unless collapsed */
+.top-nav {
+  display: none;
+}
+
+/* Collapsed state (Slim Top Bar for Roadmap Flow) */
+.top-nav.top-nav-collapsed {
+  display: flex;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  align-items: center;
+  height: var(--nav-height);
+  padding: 0 var(--space-8);
+  background-color: var(--sand);
+  transition: box-shadow var(--transition-fast);
+}
+
+.top-nav.top-nav-collapsed.top-nav-scrolled {
+  box-shadow: var(--shadow-sm);
+}
+
+.top-nav-inner-collapsed {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.top-nav-back {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--ink);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--text-label-size);
+  font-weight: var(--text-label-weight);
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast);
+}
+
+.top-nav-back:hover {
+  background-color: var(--sand-dark);
+}
+
+.top-nav-progress {
+  flex: 1;
+  max-width: 300px;
+  margin-left: var(--space-4);
+}
+
+/* Sidebar state (Desktop only) */
+@media (min-width: 768px) {
+  .top-nav.top-nav-sidebar {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 240px;
+    height: 100vh;
+    background-color: var(--olive);
+    z-index: 100;
+  }
+}
+
+.sidebar-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--space-6) 0;
+}
+
+.sidebar-header {
+  padding: 0 var(--space-6);
+  margin-bottom: var(--space-6);
+}
+
+.sidebar-wordmark {
+  font-family: var(--font-heading);
+  font-size: var(--text-h2-size);
+  line-height: var(--text-h2-lh);
+  font-weight: var(--text-h2-weight);
+  color: var(--parchment);
+  text-decoration: none;
+  letter-spacing: 0.5px;
+}
+
+.sidebar-action {
+  padding: 0 var(--space-6);
+  margin-bottom: var(--space-8);
+}
+
+/* New btn defaults to primary saffron, handled by variant="primary" */
+
+.sidebar-links {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-link {
+  font-size: var(--text-body-size);
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-weight: var(--text-body-weight);
+  padding: var(--space-4) var(--space-6);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.sidebar-link:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+
+.sidebar-link.active {
+  background-color: var(--saffron);
+  color: var(--ink);
+  font-weight: var(--text-h3-weight);
+}

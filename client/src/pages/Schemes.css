@@ -1,0 +1,109 @@
+.schemes-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-4);
+  box-sizing: border-box;
+}
+
+.schemes-header {
+  margin-bottom: var(--space-6);
+}
+
+.schemes-title {
+  color: var(--ink);
+  margin: 0 0 var(--space-4) 0;
+}
+
+.schemes-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  padding-bottom: var(--space-8);
+}
+
+@media (min-width: 768px) {
+  .schemes-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.scheme-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.scheme-card-link:hover {
+  transform: translateY(-2px);
+}
+
+/* Card override classes */
+.scheme-card {
+  background-color: var(--sand);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  box-sizing: border-box;
+}
+
+.scheme-card-content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.scheme-card-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background-color: var(--sand-dark);
+  color: var(--ink);
+  border-radius: 50%;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.scheme-card-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.scheme-card-name {
+  color: var(--ink);
+  margin: 0 0 var(--space-1) 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scheme-card-desc {
+  color: var(--ink-muted);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scheme-card-icon {
+  color: var(--ink-muted);
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.schemes-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) 0;
+  text-align: center;
+}
+
+.schemes-empty-text {
+  color: var(--ink-muted);
+  margin-bottom: var(--space-4);
+}

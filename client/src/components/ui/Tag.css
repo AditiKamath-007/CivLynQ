@@ -1,0 +1,26 @@
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-caption-size);
+  line-height: var(--text-caption-lh);
+  font-weight: var(--text-label-weight);
+  white-space: nowrap;
+}
+
+.tag-olive {
+  background-color: var(--olive-light);
+  color: var(--olive);
+}
+
+.tag-saffron {
+  background-color: var(--saffron-light);
+  color: var(--saffron-dark);
+}
+
+.tag-muted {
+  background-color: var(--sand);
+  color: var(--ink-muted);
+}

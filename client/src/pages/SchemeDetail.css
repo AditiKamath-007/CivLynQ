@@ -1,0 +1,148 @@
+.scheme-detail-container {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--space-4);
+  box-sizing: border-box;
+  padding-bottom: var(--space-16);
+}
+
+.scheme-detail-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.scheme-detail-back {
+  background: none;
+  border: none;
+  padding: var(--space-1);
+  margin-top: var(--space-1);
+  cursor: pointer;
+  color: var(--ink);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.scheme-detail-back:hover {
+  background-color: var(--sand);
+}
+
+.scheme-detail-back-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.scheme-detail-title {
+  color: var(--ink);
+  margin: 0;
+  flex: 1;
+}
+
+.scheme-detail-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.scheme-detail-card {
+  background-color: var(--sand);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+}
+
+.scheme-detail-section-title {
+  color: var(--ink);
+  margin: 0 0 var(--space-4) 0;
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--sand-dark);
+}
+
+.scheme-detail-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.scheme-detail-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  color: var(--ink);
+}
+
+.scheme-detail-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.text-olive {
+  color: var(--olive);
+}
+
+.text-saffron {
+  color: var(--saffron);
+}
+
+.scheme-detail-ordered-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.scheme-detail-ordered-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  color: var(--ink);
+}
+
+.scheme-detail-step-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background-color: var(--saffron);
+  color: white;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 600;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.scheme-detail-links {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.scheme-detail-link-btn {
+  text-decoration: none;
+  display: inline-block;
+}
+
+.scheme-detail-link-content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.scheme-detail-link-icon {
+  width: 16px;
+  height: 16px;
+}

@@ -1,0 +1,86 @@
+.dashboard-container {
+  padding: var(--space-6) var(--space-4);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-8);
+}
+
+.dashboard-header h1 {
+  margin: 0;
+  color: var(--ink);
+  font-family: 'Fraunces', serif;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.dashboard-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.dashboard-card-skeleton {
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-card-title {
+  margin-top: 0;
+  margin-bottom: var(--space-4);
+  color: var(--ink);
+  font-family: 'Fraunces', serif;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.dashboard-card-progress {
+  margin-bottom: var(--space-6);
+  flex-grow: 1;
+}
+
+.progress-text {
+  display: block;
+  margin-top: var(--space-2);
+  color: var(--ink-muted);
+}
+
+.dashboard-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+}
+
+.category-tag {
+  background-color: var(--olive-light) !important;
+  color: var(--olive) !important;
+  border-radius: var(--radius-full);
+}
+
+.last-updated {
+  color: var(--ink-muted);
+}

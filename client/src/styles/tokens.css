@@ -1,0 +1,235 @@
+/* ============================================================
+   CivLynQ — Design Tokens
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+  /* ── Colors ─────────────────────────────────────────────── */
+  --saffron:       #E0793D;
+  --saffron-dark:  #C4622C;
+  --saffron-light: rgba(224, 121, 61, 0.10);
+  --parchment:     #FAF3E4;
+  --sand:          #F0E4CE;
+  --sand-dark:     #E3D3B2;
+  --olive:         #5C6B41;
+  --olive-light:   #EEF1E6;
+  --ink:           #2B271F;
+  --ink-muted:     #6B6355;
+  --error:         #B3452E;
+  --error-light:   rgba(179, 69, 46, 0.08);
+  --white:         #FFFFFF;
+
+  /* ── Typography ─────────────────────────────────────────── */
+  --font-heading: 'Fraunces', Georgia, serif;
+  --font-body:    'Inter', system-ui, -apple-system, sans-serif;
+
+  /* text-hero */
+  --text-hero-size:   40px;
+  --text-hero-lh:     48px;
+  --text-hero-weight: 600;
+
+  /* text-h1 */
+  --text-h1-size:   28px;
+  --text-h1-lh:     36px;
+  --text-h1-weight: 600;
+
+  /* text-h2 */
+  --text-h2-size:   20px;
+  --text-h2-lh:     28px;
+  --text-h2-weight: 600;
+
+  /* text-body */
+  --text-body-size:   16px;
+  --text-body-lh:     24px;
+  --text-body-weight: 400;
+
+  /* text-label */
+  --text-label-size:   14px;
+  --text-label-lh:     20px;
+  --text-label-weight: 500;
+
+  /* text-caption */
+  --text-caption-size:   12px;
+  --text-caption-lh:     16px;
+  --text-caption-weight: 400;
+
+  /* ── Spacing (4px base) ─────────────────────────────────── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ── Radius ─────────────────────────────────────────────── */
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-lg:   20px;
+  --radius-full: 999px;
+
+  /* ── Shadows ────────────────────────────────────────────── */
+  --shadow-sm: 0 1px 3px rgba(43, 39, 31, 0.08);
+  --shadow-md: 0 4px 12px rgba(43, 39, 31, 0.12);
+
+  /* ── Transitions ────────────────────────────────────────── */
+  --transition-fast:   150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow:   400ms ease;
+
+  /* ── Layout ─────────────────────────────────────────────── */
+  --nav-height:    72px;
+  --tab-height:    64px;
+  --content-max:   1120px;
+}
+
+/* ============================================================
+   Global Reset & Base Styles
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-lh);
+  font-weight: var(--text-body-weight);
+  color: var(--ink);
+  background-color: var(--parchment);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+
+a {
+  color: var(--saffron);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--saffron-dark);
+}
+
+button {
+  font-family: var(--font-body);
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input, select, textarea {
+  font-family: var(--font-body);
+  font-size: var(--text-body-size);
+  color: var(--ink);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--ink-muted);
+}
+
+ul, ol {
+  list-style: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* ── Utility classes ──────────────────────────────────────── */
+.text-hero {
+  font-family: var(--font-heading);
+  font-size: var(--text-hero-size);
+  line-height: var(--text-hero-lh);
+  font-weight: var(--text-hero-weight);
+}
+
+.text-h1 {
+  font-family: var(--font-heading);
+  font-size: var(--text-h1-size);
+  line-height: var(--text-h1-lh);
+  font-weight: var(--text-h1-weight);
+}
+
+.text-h2 {
+  font-family: var(--font-heading);
+  font-size: var(--text-h2-size);
+  line-height: var(--text-h2-lh);
+  font-weight: var(--text-h2-weight);
+}
+
+.text-body {
+  font-family: var(--font-body);
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-lh);
+  font-weight: var(--text-body-weight);
+}
+
+.text-label {
+  font-family: var(--font-body);
+  font-size: var(--text-label-size);
+  line-height: var(--text-label-lh);
+  font-weight: var(--text-label-weight);
+}
+
+.text-caption {
+  font-family: var(--font-body);
+  font-size: var(--text-caption-size);
+  line-height: var(--text-caption-lh);
+  font-weight: var(--text-caption-weight);
+}
+
+/* ── Skeleton shimmer animation ───────────────────────────── */
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+
+/* ── Focus styles ─────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--saffron);
+  outline-offset: 2px;
+}
+
+/* ── Scrollbar styling ────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--parchment);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--sand-dark);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-muted);
+}
