@@ -222,3 +222,32 @@ export const onAuthStateChanged = (cb) => {
     return fbOnAuthStateChanged(firebaseAuth, cb);
   }
 };
+
+export const updateUserProfile = async (user, { displayName, photoURL }) => {
+  if (isMock) {
+    console.log('[Firebase Mock Auth] Updating profile for', user.uid);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const updatedUser = hydrateMockUser({
+      ...user,
+      ...(displayName !== undefined && { displayName }),
+      ...(photoURL !== undefined && { photoURL })
+    });
+    
+    if (currentMockUser && currentMockUser.uid === updatedUser.uid) {
+      currentMockUser = updatedUser;
+      mockAuth.currentUser = updatedUser;
+      localStorage.setItem('mock_user', JSON.stringify(updatedUser));
+      triggerMockAuthListeners(updatedUser);
+    }
+    return updatedUser;
+  } else {
+    await fbUpdateProfile(user, { 
+      ...(displayName !== undefined && { displayName }),
+      ...(photoURL !== undefined && { photoURL })
+    });
+    // In real firebase, updating profile does not immediately trigger authStateChanged,
+    // so we might need to manually trigger reload or return updated user
+    return user;
+  }
+};

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Home, LayoutGrid, Sparkles, LayoutDashboard, User } from 'lucide-react';
 import { motion } from 'framer-motion';
+import LogoMark from '../LogoMark';
 
 const NAV_ITEMS = [
   { path: '/', label: 'Home', icon: Home },
@@ -26,12 +27,15 @@ export default function Sidebar() {
       {/* Logo Area */}
       <div className="h-16 flex items-center px-3 mt-2 mb-4">
         {open ? (
-          <div className="text-white font-display font-extrabold text-xl ml-2 tracking-wide overflow-hidden whitespace-nowrap">
-            CIVLYNQ
+          <div className="flex items-center gap-2 ml-1 overflow-hidden whitespace-nowrap">
+            <LogoMark size={32} />
+            <span className="text-white font-display font-extrabold text-xl tracking-wide">
+              CIVLYNQ
+            </span>
           </div>
         ) : (
-          <div className="w-9 h-9 mx-auto bg-white/10 rounded-md flex items-center justify-center text-white font-display font-extrabold text-xl">
-            C
+          <div className="w-[44px] h-[44px] mx-auto rounded-md flex items-center justify-center">
+            <LogoMark size={36} />
           </div>
         )}
       </div>

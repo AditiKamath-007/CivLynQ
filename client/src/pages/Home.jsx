@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { ChevronRight } from 'lucide-react';
 import SearchBar from '../components/ui/SearchBar';
 import { procedures } from '../data/procedures';
+import { getSchemeIcon } from '../lib/schemeIcons';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -77,8 +78,8 @@ export default function Home() {
                     className="flex items-center bg-white rounded-card border border-brand-cream-dk shadow-card hover:shadow-card-hov hover:border-brand-orange-lt hover:-translate-y-0.5 transition-all duration-200 p-4 cursor-pointer gap-4 group"
                     onClick={() => handleRowClick(proc.name)}
                   >
-                    <div className="w-8 h-8 rounded-full bg-brand-orange-lt text-brand-orange font-display font-semibold flex items-center justify-center text-sm flex-shrink-0">
-                      {idx + 1}
+                    <div className="w-10 h-10 rounded-xl bg-brand-orange-lt flex items-center justify-center flex-shrink-0">
+                      {React.createElement(getSchemeIcon(proc.name), { size: 20, className: "text-brand-orange" })}
                     </div>
                     <span className="font-display font-semibold text-[15px] text-brand-ink flex-1">
                       {proc.name}
@@ -100,8 +101,8 @@ export default function Home() {
                     className="flex items-center bg-white rounded-card border border-brand-cream-dk shadow-card hover:shadow-card-hov hover:border-brand-orange-lt hover:-translate-y-0.5 transition-all duration-200 p-4 cursor-pointer gap-4 group"
                     onClick={() => handleRowClick(proc.name)}
                   >
-                    <div className="w-8 h-8 rounded-full bg-brand-orange-lt text-brand-orange font-display font-semibold flex items-center justify-center text-sm flex-shrink-0">
-                      {idx + 1}
+                    <div className="w-10 h-10 rounded-xl bg-brand-orange-lt flex items-center justify-center flex-shrink-0">
+                      {React.createElement(getSchemeIcon(proc.name), { size: 20, className: "text-brand-orange" })}
                     </div>
                     <span className="font-display font-semibold text-[15px] text-brand-ink flex-1">
                       {proc.name}
