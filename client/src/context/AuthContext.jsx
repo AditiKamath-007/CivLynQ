@@ -5,7 +5,8 @@ import {
   signInWithEmail as fbSignInWithEmail,
   createUser as fbCreateUser,
   logout as fbLogout,
-  getIdToken
+  getIdToken,
+  updateUserProfile
 } from '../services/firebase';
 import { setAuthToken } from '../services/api';
 
@@ -123,6 +124,20 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const updateProfile = async (data) => {
+    setLoading(true);
+    try {
+      const updatedUser = await updateUserProfile(currentUser, data);
+      setCurrentUser({ ...updatedUser }); // force re-render
+      return updatedUser;
+    } catch (error) {
+      console.error('Update profile error:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value = {
     currentUser,
     token,
@@ -131,7 +146,8 @@ export function AuthProvider({ children }) {
     login,
     loginWithEmail,
     signup,
-    logout
+    logout,
+    updateProfile
   };
 
   return (

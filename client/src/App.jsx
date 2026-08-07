@@ -10,6 +10,7 @@ import RoadmapQuestions from './pages/RoadmapQuestions';
 import RoadmapDetail from './pages/RoadmapDetail';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
+import DocumentGuide from './pages/DocumentGuide';
 import PageAIHelper from './components/PageAIHelper';
 
 export default function App() {
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="/roadmap/:id" element={<RoadmapDetail />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/document-guide/:docId" element={<DocumentGuide />} />
         </Route>
       </Routes>
       <PageAIHelper />

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Clock, ArrowLeft, Check, ExternalLink, Shield, X, CheckCircle2, ChevronLeft, ChevronRight, Sparkles, FileText } from 'lucide-react';
+import { Clock, ArrowLeft, Check, ExternalLink, Shield, X, CheckCircle2, ChevronLeft, ChevronRight, Sparkles, FileText, CircleCheckBig, LayoutDashboard, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toArray } from '../utils/toArray';
 import { draftDocument, checkConsent, saveConsent, saveUserDraft } from '../services/api';
@@ -22,7 +22,6 @@ export default function RoadmapDetail() {
   // Modals state
   const [exitModalOpen, setExitModalOpen] = useState(false);
   const [completionModalOpen, setCompletionModalOpen] = useState(false);
-  const [openDoc, setOpenDoc] = useState(null); // Document info modal state
 
   // AI Drafter consent state
   const [showConsentModal, setShowConsentModal] = useState(false);
@@ -183,7 +182,26 @@ export default function RoadmapDetail() {
     }
   });
 
-  const isStepComplete = hasRequiredItems ? allRequiredChecked : completedSteps[currentStepIdx];
+  const isStepComplete = hasRequiredItems ? allRequiredChecked : true;
+
+  const documentsChecked = Object.keys(checkedItems).filter(k => k.startsWith('doc_') && checkedItems[k]).length;
+  
+  let estimatedTotalMinutes = 0;
+  steps.forEach(step => {
+    const timeStr = step.estimatedTime || step.estimatedDays || step.duration;
+    if (timeStr) {
+      const num = parseInt(timeStr);
+      if (!isNaN(num)) {
+        if (timeStr.toLowerCase().includes('hour') || timeStr.toLowerCase().includes('hr')) {
+          estimatedTotalMinutes += num * 60;
+        } else if (timeStr.toLowerCase().includes('day')) {
+          estimatedTotalMinutes += num * 24 * 60;
+        } else {
+          estimatedTotalMinutes += num;
+        }
+      }
+    }
+  });
 
   return (
     <div className="bg-brand-bone min-h-screen">
@@ -293,93 +311,97 @@ export default function RoadmapDetail() {
               )}
 
               {/* Sub-tasks checklist */}
-              {subTasks.length > 0 && (
-                <>
-                  <h3 className="text-xs font-display font-semibold text-brand-ink uppercase tracking-wider mt-6 mb-3">Sub-tasks</h3>
-                  <div className="space-y-2">
-                    {subTasks.map((task, idx) => {
-                      const key = `task_${currentStepIdx}_${idx}`;
-                      const taskStr = typeof task === 'string' ? task : task.title;
-                      const isReq = typeof task === 'object' ? task.required : false;
-                      const isChecked = !!checkedItems[key];
-                      
-                      return (
-                        <div key={idx} className="flex items-start gap-3 px-4 py-3 bg-brand-bone border border-brand-cream-dk rounded-lg cursor-pointer hover:bg-brand-cream transition">
-                          <div 
-                            className={`w-5 h-5 mt-0.5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${isChecked ? 'bg-brand-green-accent border-brand-green-accent' : 'border-brand-cream-dk'}`}
-                            onClick={() => toggleCheck(key)}
-                          >
+              <h3 className="text-xs font-display font-semibold text-brand-ink uppercase tracking-wider mt-6 mb-3">Sub-tasks</h3>
+              {subTasks.length > 0 ? (
+                <div className="space-y-2">
+                  {subTasks.map((task, idx) => {
+                    const key = `task_${currentStepIdx}_${idx}`;
+                    const taskStr = typeof task === 'string' ? task : task.title;
+                    const isReq = typeof task === 'object' ? task.required : false;
+                    const isChecked = !!checkedItems[key];
+                    
+                    return (
+                      <div key={idx} className="flex items-start gap-3 px-4 py-3 bg-brand-bone border border-brand-cream-dk rounded-lg cursor-pointer hover:bg-brand-cream transition">
+                        <div 
+                          className={`w-5 h-5 mt-0.5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${isChecked ? 'bg-brand-green-accent border-brand-green-accent' : 'border-brand-cream-dk'}`}
+                          onClick={() => toggleCheck(key)}
+                        >
+                          {isChecked && (
+                            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 25 }}>
+                              <Check size={14} className="text-white" />
+                            </motion.div>
+                          )}
+                        </div>
+                        <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2" onClick={() => toggleCheck(key)}>
+                          <span className={`font-sans text-[15px] ${isChecked ? 'text-brand-ink-mute line-through' : 'text-brand-ink'}`}>
+                            {taskStr}
+                          </span>
+                          {isReq && (
+                            <span className="bg-red-50 text-red-600 text-[11px] font-medium px-2 py-0.5 rounded-pill shrink-0">
+                              Required
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="bg-brand-bone border border-brand-cream-dk rounded-lg p-4 text-sm text-brand-ink-mute font-sans">
+                  No specific tasks required for this step. Just review the info above.
+                </div>
+              )}
+
+              {/* Documents checklist */}
+              <h3 className="text-xs font-display font-semibold text-brand-ink uppercase tracking-wider mt-6 mb-3">Documents needed</h3>
+              {docs.length > 0 ? (
+                <div className="space-y-2">
+                  {docs.map((doc, idx) => {
+                    const key = `doc_${currentStepIdx}_${idx}`;
+                    const docStr = typeof doc === 'string' ? doc : doc.name || doc.title;
+                    const isReq = typeof doc === 'object' ? doc.required : true;
+                    const isChecked = !!checkedItems[key];
+                    
+                    return (
+                      <div key={idx} className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3 bg-brand-bone border border-brand-cream-dk rounded-lg hover:bg-brand-cream transition">
+                        <div className="flex items-start sm:items-center gap-3 flex-1 cursor-pointer" onClick={() => toggleCheck(key)}>
+                          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${isChecked ? 'bg-brand-green-accent border-brand-green-accent' : 'border-brand-cream-dk'}`}>
                             {isChecked && (
                               <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 25 }}>
                                 <Check size={14} className="text-white" />
                               </motion.div>
                             )}
                           </div>
-                          <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2" onClick={() => toggleCheck(key)}>
-                            <span className={`font-sans text-[15px] ${isChecked ? 'text-brand-ink-mute line-through' : 'text-brand-ink'}`}>
-                              {taskStr}
-                            </span>
-                            {isReq && (
-                              <span className="bg-red-50 text-red-600 text-[11px] font-medium px-2 py-0.5 rounded-pill shrink-0">
-                                Required
-                              </span>
-                            )}
-                          </div>
+                          <span className={`font-sans text-[15px] flex-1 ${isChecked ? 'text-brand-ink-mute line-through' : 'text-brand-ink'}`}>
+                            {docStr}
+                          </span>
                         </div>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
+                        
+                        <div className="flex items-center gap-3 ml-8 sm:ml-0">
+                          {/* NEW FEATURE: "Get this document" button */}
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); navigate(`/document-guide/${encodeURIComponent(docStr)}`); }}
+                            className="inline-flex items-center gap-1.5 text-sm text-brand-orange hover:text-brand-orange-dk font-medium font-sans transition cursor-pointer shrink-0"
+                          >
+                            <ExternalLink size={14} /> How to get this
+                          </button>
 
-              {/* Documents checklist */}
-              {docs.length > 0 && (
-                <>
-                  <h3 className="text-xs font-display font-semibold text-brand-ink uppercase tracking-wider mt-6 mb-3">Documents needed</h3>
-                  <div className="space-y-2">
-                    {docs.map((doc, idx) => {
-                      const key = `doc_${currentStepIdx}_${idx}`;
-                      const docStr = typeof doc === 'string' ? doc : doc.name || doc.title;
-                      const isReq = typeof doc === 'object' ? doc.required : true;
-                      const isChecked = !!checkedItems[key];
-                      
-                      return (
-                        <div key={idx} className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3 bg-brand-bone border border-brand-cream-dk rounded-lg hover:bg-brand-cream transition">
-                          <div className="flex items-start sm:items-center gap-3 flex-1 cursor-pointer" onClick={() => toggleCheck(key)}>
-                            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${isChecked ? 'bg-brand-green-accent border-brand-green-accent' : 'border-brand-cream-dk'}`}>
-                              {isChecked && (
-                                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 25 }}>
-                                  <Check size={14} className="text-white" />
-                                </motion.div>
-                              )}
-                            </div>
-                            <span className={`font-sans text-[15px] flex-1 ${isChecked ? 'text-brand-ink-mute line-through' : 'text-brand-ink'}`}>
-                              {docStr}
-                            </span>
-                          </div>
-                          
-                          <div className="flex items-center gap-3 ml-8 sm:ml-0">
-                            {/* NEW FEATURE: "Get this document" button */}
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); setOpenDoc(docStr); }}
-                              className="inline-flex items-center gap-1.5 text-sm text-brand-orange hover:text-brand-orange-dk font-medium font-sans transition cursor-pointer shrink-0"
-                            >
-                              <ExternalLink size={14} /> How to get this
-                            </button>
-
-                            {isChecked ? (
-                              <span className="bg-brand-green-accent/15 text-brand-green text-xs px-2 py-0.5 rounded-pill shrink-0">Ready</span>
-                            ) : isReq ? (
-                              <span className="bg-red-50 text-red-600 text-xs px-2 py-0.5 rounded-pill shrink-0">Required</span>
-                            ) : (
-                              <span className="bg-brand-cream border border-brand-cream-dk text-brand-ink-mute text-xs px-2 py-0.5 rounded-pill shrink-0">Optional</span>
-                            )}
-                          </div>
+                          {isChecked ? (
+                            <span className="bg-brand-green-accent/15 text-brand-green text-xs px-2 py-0.5 rounded-pill shrink-0">Ready</span>
+                          ) : isReq ? (
+                            <span className="bg-red-50 text-red-600 text-xs px-2 py-0.5 rounded-pill shrink-0">Required</span>
+                          ) : (
+                            <span className="bg-brand-cream border border-brand-cream-dk text-brand-ink-mute text-xs px-2 py-0.5 rounded-pill shrink-0">Optional</span>
+                          )}
                         </div>
-                      );
-                    })}
-                  </div>
-                </>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="bg-brand-bone border border-brand-cream-dk rounded-lg p-4 text-sm text-brand-ink-mute font-sans">
+                  No documents required for this step.
+                </div>
               )}
 
               {mistakes.length > 0 && (
@@ -478,83 +500,66 @@ export default function RoadmapDetail() {
       {/* Completion Modal */}
       {completionModalOpen && (
         <div className="fixed inset-0 bg-brand-bone/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-pop p-10 max-w-md w-full mx-4 text-center">
+          <div className="bg-white rounded-2xl shadow-pop p-10 max-w-md w-full mx-4 text-center relative overflow-hidden">
+            {[...Array(5)].map((_, i) => (
+               <motion.div 
+                 key={i}
+                 className={`absolute bottom-8 w-2 h-2 rounded-full ${['bg-brand-orange', 'bg-brand-green-accent', 'bg-brand-cream-dk'][i % 3]}`}
+                 style={{ left: `${20 + (i * 15)}%` }}
+                 animate={{ y: [0, -40, -80], opacity: [0, 1, 0] }}
+                 transition={{ duration: 2, repeat: Infinity, repeatDelay: 3, delay: i * 0.2 }}
+               />
+            ))}
             <motion.div 
               initial={{ scale: 0 }} 
               animate={{ scale: 1 }} 
               transition={{ type: "spring", stiffness: 200, damping: 12 }}
               className="flex justify-center"
             >
-              <CheckCircle2 size={80} className="text-brand-green-accent" />
+              <div className="w-24 h-24 rounded-full bg-brand-green-accent/15 flex items-center justify-center mx-auto">
+                <CircleCheckBig size={56} className="text-brand-green-accent" />
+              </div>
             </motion.div>
             <h2 className="font-display font-bold text-2xl text-brand-ink mt-6">Journey complete!</h2>
             <p className="text-sm text-brand-ink-mute mt-2 font-sans">
               Great work. All your steps are saved to your dashboard.
             </p>
+            
+            <div className="flex justify-center gap-3 mt-6">
+              <div className="flex flex-col items-center bg-brand-bone rounded-xl px-4 py-3 min-w-[80px]">
+                <span className="font-display font-bold text-xl text-brand-ink">{totalSteps}</span>
+                <span className="text-xs text-brand-ink-mute font-sans">Steps done</span>
+              </div>
+              <div className="flex flex-col items-center bg-brand-bone rounded-xl px-4 py-3 min-w-[80px]">
+                <span className="font-display font-bold text-xl text-brand-ink">{documentsChecked}</span>
+                <span className="text-xs text-brand-ink-mute font-sans">Documents</span>
+              </div>
+              {estimatedTotalMinutes > 0 && (
+                <div className="flex flex-col items-center bg-brand-bone rounded-xl px-4 py-3 min-w-[80px]">
+                  <span className="font-display font-bold text-xl text-brand-ink">{estimatedTotalMinutes}</span>
+                  <span className="text-xs text-brand-ink-mute font-sans">Minutes</span>
+                </div>
+              )}
+            </div>
+
             <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">
               <button 
-                onClick={() => navigate('/dashboard')}
-                className="bg-brand-orange hover:bg-brand-orange-dk text-white font-display font-semibold px-5 h-11 rounded-pill shadow-card transition"
+                onClick={() => { setCompletionModalOpen(false); navigate('/dashboard'); }}
+                className="bg-brand-orange hover:bg-brand-orange-dk text-white font-display font-semibold px-5 h-11 rounded-pill shadow-card transition flex items-center justify-center gap-2"
               >
-                Back to Dashboard
+                <LayoutDashboard size={16} /> Back to Dashboard
               </button>
               <button 
-                onClick={() => navigate('/')}
-                className="border border-brand-cream-dk bg-white hover:bg-brand-cream text-brand-ink font-medium px-5 h-11 rounded-pill transition font-sans"
+                onClick={() => { setCompletionModalOpen(false); navigate('/'); }}
+                className="border border-brand-cream-dk bg-white hover:bg-brand-cream text-brand-ink font-medium px-5 h-11 rounded-pill transition font-sans flex items-center justify-center gap-2"
               >
-                Start Another Journey
+                <Plus size={16} /> Start Another Journey
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Document Info Modal */}
-      <AnimatePresence>
-        {openDoc && (
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-2xl shadow-pop max-w-md w-full p-6 relative"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-brand-orange-lt flex items-center justify-center">
-                  <FileText size={20} className="text-brand-orange" />
-                </div>
-                <div>
-                  <h2 className="font-display font-semibold text-lg text-brand-ink">How to get: {openDoc}</h2>
-                  <p className="text-xs text-brand-ink-mute">Step-by-step guide</p>
-                </div>
-              </div>
-              
-              {/* 🤖 AI INTEGRATION POINT 4: Document guides */}
-              <div className="space-y-4 mb-6 mt-6">
-                <div className="flex items-start gap-3">
-                  <div className="w-7 h-7 rounded-full bg-brand-orange-lt text-brand-orange font-display font-semibold flex items-center justify-center text-xs flex-shrink-0">1</div>
-                  <p className="text-sm text-brand-ink font-sans leading-relaxed mt-1">Visit your nearest government office or the official online portal for {openDoc}.</p>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-7 h-7 rounded-full bg-brand-orange-lt text-brand-orange font-display font-semibold flex items-center justify-center text-xs flex-shrink-0">2</div>
-                  <p className="text-sm text-brand-ink font-sans leading-relaxed mt-1">Fill out the application form and submit the required supporting documents.</p>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-7 h-7 rounded-full bg-brand-orange-lt text-brand-orange font-display font-semibold flex items-center justify-center text-xs flex-shrink-0">3</div>
-                  <p className="text-sm text-brand-ink font-sans leading-relaxed mt-1">Pay any applicable fees and collect your {openDoc} (usually issued within 7-15 working days).</p>
-                </div>
-              </div>
-
-              <button 
-                onClick={() => setOpenDoc(null)}
-                className="w-full h-11 bg-brand-orange hover:bg-brand-orange-dk text-white font-display font-semibold rounded-pill shadow-card flex items-center justify-center transition"
-              >
-                Got it
-              </button>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

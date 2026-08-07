@@ -3,6 +3,8 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Target, Loader2, AlertCircle, RefreshCw, Check, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { generateQuestions, generateWorkflow } from '../services/api';
+import TypeaheadSelect from '../components/TypeaheadSelect';
+import { indianStates } from '../lib/indianStates';
 
 export default function RoadmapQuestions() {
   const [searchParams] = useSearchParams();
@@ -278,7 +280,18 @@ export default function RoadmapQuestions() {
               value={val || ''}
               onChange={(e) => handleTextChange(currentQuestion.id, e.target.value)}
             />
-          ) : /* Text type (default) */ (
+          ) : /* Text type (default) */ 
+          (currentQuestion.question.toLowerCase().includes('state') || currentQuestion.question.toLowerCase().includes('location') || currentQuestion.id.toLowerCase().includes('state')) ? (
+            <div className="mt-2">
+              <TypeaheadSelect
+                value={val || ''}
+                onChange={(value) => handleTextChange(currentQuestion.id, value)}
+                options={indianStates}
+                required={isRequired}
+                placeholder="Select your state…"
+              />
+            </div>
+          ) : (
             <input
               type="text"
               className="w-full h-11 bg-white border border-brand-cream-dk rounded-lg px-3 font-sans text-[15px] focus:border-brand-orange focus:shadow-pop outline-none transition mt-2"

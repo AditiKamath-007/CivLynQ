@@ -4,27 +4,9 @@ import { ChevronRight, Search, Landmark, Heart, Briefcase, Coins, GraduationCap,
 import { motion } from 'framer-motion';
 import SearchBar from '../components/ui/SearchBar';
 import { schemes } from '../data/schemes';
+import { getSchemeIcon } from '../lib/schemeIcons';
 
-const CATEGORY_ICONS = {
-  'Agriculture': Tractor,
-  'Health': Heart,
-  'Finance': Coins,
-  'Education': GraduationCap,
-  'Insurance': Shield,
-  'Employment': Briefcase,
-  'Housing': Landmark,
-};
 
-function getCategoryIcon(scheme) {
-  const name = scheme.name?.toLowerCase() || '';
-  if (name.includes('kisan') || name.includes('fasal') || name.includes('ujjwala')) return Tractor;
-  if (name.includes('ayushman') || name.includes('suraksha')) return Heart;
-  if (name.includes('mudra') || name.includes('stand-up') || name.includes('jan dhan')) return Coins;
-  if (name.includes('skill') || name.includes('sukanya')) return GraduationCap;
-  if (name.includes('bima') || name.includes('pension')) return Shield;
-  if (name.includes('awas')) return Landmark;
-  return Landmark;
-}
 
 function getCategoryColor(scheme) {
   const name = scheme.name?.toLowerCase() || '';
@@ -85,7 +67,6 @@ export default function Schemes() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {filteredSchemes.length > 0 ? (
             filteredSchemes.map((scheme, index) => {
-              const IconComponent = getCategoryIcon(scheme);
               const colors = getCategoryColor(scheme);
               
               return (
@@ -106,8 +87,8 @@ export default function Schemes() {
 
                     <div className="flex items-start gap-4">
                       {/* Icon Badge */}
-                      <div className={`w-11 h-11 rounded-xl ${colors.bg} ${colors.text} flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform`}>
-                        <IconComponent size={22} />
+                      <div className={`w-10 h-10 rounded-xl bg-brand-orange-lt flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform`}>
+                        {React.createElement(getSchemeIcon(scheme.name), { size: 20, className: "text-brand-orange" })}
                       </div>
 
                       <div className="flex-1 min-w-0">

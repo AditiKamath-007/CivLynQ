@@ -1,16 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Pencil, User, FileText, ChevronRight, LogOut, Shield } from 'lucide-react';
+import { Pencil, User, FileText, ChevronRight, LogOut, Shield, X, Check } from 'lucide-react';
+import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
 import { useAuth } from '../context/AuthContext';
 import { getUserDrafts, checkConsent, saveConsent } from '../services/api';
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, updateProfile } = useAuth();
   const [expandedRow, setExpandedRow] = useState(null);
   const [drafts, setDrafts] = useState([]);
   const [loadingDrafts, setLoadingDrafts] = useState(true);
   const [hasConsented, setHasConsented] = useState(false);
+
+  // Avatar Crop State
+  const [imgSrc, setImgSrc] = useState('');
+  const [crop, setCrop] = useState();
+  const [completedCrop, setCompletedCrop] = useState(null);
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+  const [isSavingAvatar, setIsSavingAvatar] = useState(false);
+  const imgRef = React.useRef(null);
+  const fileInputRef = React.useRef(null);
 
   useEffect(() => {
     if (currentUser) {
@@ -62,6 +73,82 @@ export default function Profile() {
     }
   };
 
+  const onSelectFile = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setCrop(undefined); // Makes crop preview update between images.
+      const reader = new FileReader();
+      reader.addEventListener('load', () => {
+        setImgSrc(reader.result?.toString() || '');
+        setIsCropModalOpen(true);
+      });
+      reader.readAsDataURL(e.target.files[0]);
+    }
+    // reset input
+    e.target.value = '';
+  };
+
+  const onImageLoad = (e) => {
+    const { width, height } = e.currentTarget;
+    const cropArea = centerCrop(
+      makeAspectCrop(
+        { unit: '%', width: 90 },
+        1,
+        width,
+        height
+      ),
+      width,
+      height
+    );
+    setCrop(cropArea);
+  };
+
+  const saveAvatar = async () => {
+    if (!completedCrop || !imgRef.current) return;
+    setIsSavingAvatar(true);
+    
+    try {
+      const image = imgRef.current;
+      const canvas = document.createElement('canvas');
+      const scaleX = image.naturalWidth / image.width;
+      const scaleY = image.naturalHeight / image.height;
+      const ctx = canvas.getContext('2d');
+      
+      const pixelRatio = window.devicePixelRatio;
+      canvas.width = Math.floor(completedCrop.width * scaleX * pixelRatio);
+      canvas.height = Math.floor(completedCrop.height * scaleY * pixelRatio);
+      
+      ctx.scale(pixelRatio, pixelRatio);
+      ctx.imageSmoothingQuality = 'high';
+      
+      const cropX = completedCrop.x * scaleX;
+      const cropY = completedCrop.y * scaleY;
+      
+      const cropWidth = completedCrop.width * scaleX;
+      const cropHeight = completedCrop.height * scaleY;
+      
+      ctx.drawImage(
+        image,
+        cropX,
+        cropY,
+        cropWidth,
+        cropHeight,
+        0,
+        0,
+        cropWidth,
+        cropHeight
+      );
+      
+      const base64Image = canvas.toDataURL('image/jpeg', 0.9);
+      await updateProfile({ photoURL: base64Image });
+      setIsCropModalOpen(false);
+    } catch (error) {
+      console.error('Failed to save avatar:', error);
+      alert('Failed to save avatar. Please try again.');
+    } finally {
+      setIsSavingAvatar(false);
+    }
+  };
+
   const getInitials = () => {
     if (!currentUser?.displayName) return 'CU';
     return currentUser.displayName
@@ -87,9 +174,20 @@ export default function Profile() {
               getInitials()
             )}
           </div>
-          <div className="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-card cursor-pointer hover:bg-brand-cream transition-colors">
+          <button 
+            onClick={() => fileInputRef.current?.click()}
+            className="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-card cursor-pointer hover:bg-brand-cream transition-colors border border-brand-cream-dk"
+            aria-label="Change Avatar"
+          >
             <Pencil size={14} className="text-brand-ink" />
-          </div>
+          </button>
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            onChange={onSelectFile}
+            className="hidden"
+          />
         </div>
 
         <h1 className="font-display font-bold text-2xl text-brand-ink text-center">
@@ -192,6 +290,62 @@ export default function Profile() {
           
         </div>
       </div>
+
+      {/* Crop Modal */}
+      {isCropModalOpen && !!imgSrc && (
+        <div className="fixed inset-0 bg-brand-bone/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-pop p-6 max-w-sm w-full mx-4 flex flex-col items-center relative">
+            <button 
+              onClick={() => setIsCropModalOpen(false)}
+              className="absolute top-4 right-4 p-2 text-brand-ink-mute hover:text-brand-ink transition-colors rounded-full hover:bg-brand-cream"
+              aria-label="Close"
+            >
+              <X size={20} />
+            </button>
+            <h2 className="font-display font-semibold text-xl text-brand-ink mb-6">Crop Avatar</h2>
+            
+            <div className="w-full max-h-[300px] overflow-hidden rounded-lg flex justify-center bg-brand-bone border border-brand-cream-dk mb-6">
+              <ReactCrop
+                crop={crop}
+                onChange={(_, percentCrop) => setCrop(percentCrop)}
+                onComplete={(c) => setCompletedCrop(c)}
+                aspect={1}
+                circularCrop
+              >
+                <img
+                  ref={imgRef}
+                  alt="Crop preview"
+                  src={imgSrc}
+                  onLoad={onImageLoad}
+                  className="max-h-[300px] object-contain"
+                />
+              </ReactCrop>
+            </div>
+
+            <div className="flex gap-3 w-full">
+              <button 
+                onClick={() => setIsCropModalOpen(false)}
+                className="flex-1 h-11 px-4 rounded-pill border border-brand-cream-dk bg-white text-brand-ink font-medium hover:bg-brand-cream transition font-sans"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={saveAvatar}
+                disabled={isSavingAvatar || !completedCrop?.width || !completedCrop?.height}
+                className="flex-1 h-11 px-4 rounded-pill bg-brand-orange hover:bg-brand-orange-dk text-white font-semibold font-display shadow-card transition disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isSavingAvatar ? (
+                  <span>Saving...</span>
+                ) : (
+                  <>
+                    <Check size={16} /> Save
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
