@@ -54,14 +54,26 @@ async function generateWorkflow(goal, answers) {
     if (!client) throw new Error('Groq not initialized');
 
     const answersText = JSON.stringify(answers);
-    const prompt = `You are an expert on Indian government and civic processes.
+    const prompt = `You are an expert government, legal, and compliance advisor on Indian processes.
 The user's goal is: "${goal}".
 Their specific situation (based on intake answers) is: ${answersText}.
+
+CRITICAL DOCUMENT RULES (FAILURE IS UNACCEPTABLE):
+1. ZERO HALLUCINATIONS: You must NEVER invent documents. Only list documents that are strictly required by official, real-world procedures.
+2. NO CONSULTANT FEES: Do not require documents or steps for hiring consultants/lawyers unless legally mandated.
+3. SPECIFICITY: Do not say "Identity Proof". Say exactly what is accepted (e.g., "Aadhaar Card, PAN Card, or Passport").
+
+--- CHAIN OF THOUGHT PROCESS ---
+Before generating the steps, you must mentally create a "Master Document List" required for the entire goal. Include ALL basic mandatory documents AND EXACT, highly specific documents.
+Then, as you generate the 'steps' array, you must take documents from that Master List and assign them ONLY to the specific step where the user actually needs to upload or submit them. 
+DO NOT list all documents in Step 1.
+If a step requires no documents (e.g., "Wait for approval"), the 'requiredDocuments' array MUST be empty [].
 
 Generate a JSON object with a single key "workflow" containing the roadmap.
 The "workflow" should have:
 - "title": string
 - "description": string
+- "masterRequiredDocuments": array of strings (the master list of all documents needed across all steps)
 - "steps": array of objects, where each object has:
   - "id": string
   - "title": string
@@ -70,9 +82,10 @@ The "workflow" should have:
   - "agency": string (the government body involved)
   - "estimatedTime": string (e.g., "2-3 days")
   - "cost": string (e.g., "Rs. 500")
-  - "requiredDocuments": array of strings
+  - "requiredDocuments": array of strings (pulled from masterRequiredDocuments, only for this specific step)
+  - "prerequisites": array of strings (actions, not files)
   - "tips": array of strings (helpful advice)
-  - "links": array of objects with "text" and "url". CRITICAL: These MUST be specific, actual, working official Indian government URLs (e.g. https://sarathi.parivahan.gov.in for DL). Do NOT provide generic links.
+  - "links": array of objects with "text" and "url". CRITICAL: These MUST be specific, actual, working official Indian government URLs (e.g. https://sarathi.parivahan.gov.in). Do NOT provide generic links.
   - "templates": array of objects with "type" (e.g., "Affidavit", "Application") and "name"
 
 Return ONLY valid JSON.`;
