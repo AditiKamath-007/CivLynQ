@@ -3,7 +3,7 @@ import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Plus } from 'lucide-react';
 import Button from '../ui/Button';
 import ProgressBar from '../ui/ProgressBar';
-import './TopNav.css';
+import '../../styles/_legacy/TopNav.css';
 
 export default function TopNav({ collapsed = false, progress, onBack }) {
   const [scrolled, setScrolled] = useState(false);

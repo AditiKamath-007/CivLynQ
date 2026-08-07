@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User as UserIcon, Phone, Eye, EyeOff } from 'lucide-react';
 
-export default function Login() {
+export default function Signup() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login } = useAuth(); // Assume login covers both for mockup purposes
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -14,16 +14,16 @@ export default function Login() {
       await login(); // mockup
       navigate('/');
     } catch (error) {
-      console.error('Failed to sign in:', error);
+      console.error('Failed to sign up:', error);
     }
   };
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleSignup = async () => {
     try {
       await login();
       navigate('/');
     } catch (error) {
-      console.error('Failed to log in with Google:', error);
+      console.error('Failed to sign up with Google:', error);
     }
   };
 
@@ -49,10 +49,23 @@ export default function Login() {
       {/* Right Panel */}
       <div className="w-full md:w-1/2 bg-bone flex items-center justify-center p-8 min-h-screen">
         <div className="w-full max-w-sm bg-white rounded-2xl shadow-card p-8">
-          <h2 className="font-display font-bold text-2xl text-brand-ink">Welcome back.</h2>
-          <p className="text-sm text-brand-ink-mute mt-1 mb-6">Sign in to continue your journey.</p>
+          <h2 className="font-display font-bold text-2xl text-brand-ink">Create your account.</h2>
+          <p className="text-sm text-brand-ink-mute mt-1 mb-6">It takes less than a minute.</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Full Name */}
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-brand-ink-mute">
+                <UserIcon size={18} />
+              </div>
+              <input
+                type="text"
+                placeholder="Full name"
+                required
+                className="h-11 w-full rounded-lg border border-brand-cream-dk bg-white pl-10 pr-3 font-sans text-[15px] focus:border-brand-orange focus:shadow-pop outline-none transition"
+              />
+            </div>
+
             {/* Email */}
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-brand-ink-mute">
@@ -63,6 +76,20 @@ export default function Login() {
                 placeholder="Email address"
                 required
                 className="h-11 w-full rounded-lg border border-brand-cream-dk bg-white pl-10 pr-3 font-sans text-[15px] focus:border-brand-orange focus:shadow-pop outline-none transition"
+              />
+            </div>
+
+            {/* Phone */}
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-brand-ink-mute gap-1">
+                <Phone size={18} />
+                <span className="text-[15px] font-sans">🇮🇳 +91</span>
+              </div>
+              <input
+                type="tel"
+                placeholder="Phone number"
+                required
+                className="h-11 w-full rounded-lg border border-brand-cream-dk bg-white pl-[84px] pr-3 font-sans text-[15px] focus:border-brand-orange focus:shadow-pop outline-none transition"
               />
             </div>
 
@@ -90,7 +117,7 @@ export default function Login() {
               type="submit"
               className="w-full h-11 mt-2 bg-brand-orange hover:bg-brand-orange-dk text-white font-display font-semibold rounded-pill shadow-card transition-all duration-200"
             >
-              Sign in
+              Create account
             </button>
           </form>
 
@@ -101,7 +128,7 @@ export default function Login() {
           </div>
 
           <button
-            onClick={handleGoogleLogin}
+            onClick={handleGoogleSignup}
             className="w-full h-11 border border-brand-cream-dk bg-white hover:bg-brand-orange-lt text-brand-ink font-medium rounded-pill flex items-center justify-center gap-2 transition-all duration-200"
           >
             <svg viewBox="0 0 24 24" width="18" height="18">
@@ -114,7 +141,7 @@ export default function Login() {
           </button>
 
           <p className="text-sm text-brand-ink-mute text-center mt-5">
-            Don't have an account? <Link to="/signup" className="text-brand-orange font-semibold hover:underline">Sign up</Link>
+            Already have an account? <Link to="/login" className="text-brand-orange font-semibold hover:underline">Sign in</Link>
           </p>
         </div>
       </div>

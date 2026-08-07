@@ -1,18 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Compass } from 'lucide-react';
-import Button from '../components/ui/Button';
-import Card from '../components/ui/Card';
-import ProgressBar from '../components/ui/ProgressBar';
-import Tag from '../components/ui/Tag';
-import EmptyState from '../components/ui/EmptyState';
-import Skeleton from '../components/ui/Skeleton';
-import './Dashboard.css';
+import { Compass, Trash2, Plus } from 'lucide-react';
+import ConfirmModal from '../components/ui/ConfirmModal';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [journeys, setJourneys] = useState([]);
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, journeyId: null, journeyTitle: '' });
 
   useEffect(() => {
     // Simulate initial loading
@@ -50,77 +45,141 @@ const Dashboard = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  if (loading) {
-    return (
-      <div className="dashboard-container">
-        <div className="dashboard-header">
-          <h1 className="text-h1">Dashboard</h1>
-          <Button variant="primary" onClick={() => navigate('/')}>+ New</Button>
-        </div>
-        <div className="dashboard-grid">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="dashboard-card-skeleton">
-              <Skeleton height="32px" width="80%" style={{ marginBottom: '16px' }} />
-              <Skeleton height="8px" width="100%" style={{ marginBottom: '8px', borderRadius: '4px' }} />
-              <Skeleton height="16px" width="60%" style={{ marginBottom: '16px' }} />
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <Skeleton height="24px" width="60px" style={{ borderRadius: '12px' }} />
-                <Skeleton height="24px" width="80px" />
-              </div>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const handleDelete = (id) => {
+    // Remove from local storage
+    localStorage.removeItem(id);
+    localStorage.removeItem(`completed-${id}`);
+    localStorage.removeItem(`completed-${id.replace('roadmap-', '')}`);
+    
+    // Update state
+    setJourneys(prev => prev.filter(j => j.id !== id));
+  };
+
+  const openDeleteModal = (e, journey) => {
+    e.stopPropagation();
+    setDeleteModal({
+      isOpen: true,
+      journeyId: journey.id,
+      journeyTitle: journey.goal || 'this journey'
+    });
+  };
 
   return (
-    <div className="dashboard-container">
-      <div className="dashboard-header">
-        <h1 className="text-h1">Dashboard</h1>
-        <Button variant="primary" onClick={() => navigate('/')}>+ New</Button>
+    <div className="bg-bone min-h-screen pb-20 md:pb-10">
+      <div className="max-w-6xl mx-auto px-6 py-10">
+        
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="font-display font-bold text-3xl text-brand-ink">Dashboard</h1>
+          <button 
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dk text-white font-semibold font-display text-[15px] px-4 h-10 rounded-pill shadow-card hover:shadow-card-hov transition-all duration-200"
+          >
+            <Plus size={18} aria-hidden="true" />
+            <span className="hidden sm:inline">New Journey</span>
+            <span className="sm:hidden">New</span>
+          </button>
+        </div>
+
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="bg-white rounded-card border border-brand-cream-dk p-6 animate-pulse">
+                <div className="h-6 bg-brand-cream-dk rounded w-3/4 mb-4"></div>
+                <div className="h-2 bg-brand-cream-dk rounded-pill w-full mb-2"></div>
+                <div className="h-4 bg-brand-cream-dk rounded w-1/2 mt-4"></div>
+              </div>
+            ))}
+          </div>
+        ) : journeys.length === 0 ? (
+          /* Empty State */
+          <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+            <Compass size={64} className="text-brand-orange-lt mb-4" />
+            <h2 className="font-display font-semibold text-xl text-brand-ink mb-2">No journeys yet</h2>
+            <p className="text-sm text-brand-ink-mute mb-6">Start your first government process today.</p>
+            <button 
+              onClick={() => navigate('/')}
+              className="flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dk text-white font-semibold font-display text-[15px] px-6 h-11 rounded-pill shadow-card hover:shadow-card-hov transition-all duration-200"
+            >
+              <Plus size={18} aria-hidden="true" />
+              <span>New Journey</span>
+            </button>
+          </div>
+        ) : (
+          /* Grid of Journeys */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {journeys.map((journey) => {
+              const percent = journey.totalSteps > 0 ? (journey.completedCount / journey.totalSteps) * 100 : 0;
+              const isCompleted = journey.totalSteps > 0 && journey.completedCount === journey.totalSteps;
+
+              return (
+                <div
+                  key={journey.id}
+                  onClick={() => navigate(`/roadmap/${journey.id}`)}
+                  className="bg-white rounded-card border border-brand-cream-dk shadow-card hover:shadow-card-hov transition-all duration-200 p-6 relative cursor-pointer group"
+                >
+                  {/* Delete Button */}
+                  <button 
+                    onClick={(e) => openDeleteModal(e, journey)}
+                    className="absolute top-3 right-3 p-2 text-brand-ink-mute hover:text-red-600 transition-colors rounded-full hover:bg-red-50 z-10"
+                    aria-label="Delete journey"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+
+                  <h2 className="font-display font-semibold text-lg text-brand-ink pr-10 line-clamp-2">
+                    {journey.goal || 'Untitled Journey'}
+                  </h2>
+                  
+                  {/* Progress Bar */}
+                  <div className="h-2 w-full bg-brand-cream-dk rounded-pill mt-4 overflow-hidden">
+                    <div 
+                      className="h-full bg-brand-orange transition-all duration-[600ms] ease-out"
+                      style={{ width: `${percent}%` }}
+                    />
+                  </div>
+                  
+                  <div className="flex justify-between items-center mt-2">
+                    <span className="text-xs text-brand-ink-mute">
+                      {journey.completedCount} of {journey.totalSteps} steps completed
+                    </span>
+                    
+                    {/* Status Pill */}
+                    {isCompleted ? (
+                      <span className="bg-brand-green-accent/15 text-brand-green text-[10px] px-2 py-0.5 rounded-pill font-medium uppercase tracking-wider">
+                        Completed
+                      </span>
+                    ) : (
+                      <span className="bg-brand-orange-lt text-brand-orange text-[10px] px-2 py-0.5 rounded-pill font-medium uppercase tracking-wider">
+                        In Progress
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Footer */}
+                  <div className="flex justify-between items-end mt-6">
+                    <span className="bg-white border border-brand-cream-dk text-brand-ink-mute text-xs px-3 py-1 rounded-pill">
+                      {journey.category || journey.complexity || 'Standard'}
+                    </span>
+                    <span className="text-xs text-brand-ink-mute">
+                      {journey.createdAt ? new Date(journey.createdAt).toLocaleDateString() : 'Recently added'}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
       </div>
 
-      {journeys.length === 0 ? (
-        <EmptyState
-          icon={<Compass size={48} />}
-          title="No journeys yet"
-          description="Start exploring government processes and your progress will appear here."
-          action={<Button variant="primary" onClick={() => navigate('/')}>Start a Journey</Button>}
-        />
-      ) : (
-        <div className="dashboard-grid">
-          {journeys.map((journey) => (
-            <Card
-              key={journey.id}
-              hoverable
-              clickable
-              onClick={() => navigate(`/roadmap/${journey.id}`)}
-              className="dashboard-card"
-            >
-              <h2 className="text-h2 dashboard-card-title">{journey.goal || 'Untitled Journey'}</h2>
-              
-              <div className="dashboard-card-progress">
-                <ProgressBar 
-                  progress={journey.totalSteps > 0 ? (journey.completedCount / journey.totalSteps) * 100 : 0} 
-                />
-                <span className="text-caption progress-text">
-                  {journey.completedCount} of {journey.totalSteps} steps completed
-                </span>
-              </div>
-
-              <div className="dashboard-card-footer">
-                <Tag className="category-tag">
-                  {journey.category || journey.complexity || 'Standard'}
-                </Tag>
-                <span className="text-caption last-updated">
-                  {journey.createdAt ? new Date(journey.createdAt).toLocaleDateString() : 'Recently added'}
-                </span>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
+      <ConfirmModal 
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, journeyId: null, journeyTitle: '' })}
+        onConfirm={() => handleDelete(deleteModal.journeyId)}
+        title="Delete this journey?"
+        body={`This action cannot be undone. All progress for "${deleteModal.journeyTitle}" will be permanently removed.`}
+      />
     </div>
   );
 };

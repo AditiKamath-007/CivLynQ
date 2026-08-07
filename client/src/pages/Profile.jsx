@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Pencil, User, FileText, ChevronRight } from 'lucide-react';
-import Card from '../components/ui/Card';
-import Button from '../components/ui/Button';
-import EmptyState from '../components/ui/EmptyState';
+import { Pencil, User, FileText, ChevronRight, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getUserDrafts } from '../services/api';
-import './Profile.css';
 
-const Profile = () => {
+export default function Profile() {
   const navigate = useNavigate();
   const { currentUser, logout } = useAuth();
   const [expandedRow, setExpandedRow] = useState(null);
@@ -56,163 +52,110 @@ const Profile = () => {
       .toUpperCase();
   };
 
+  // Dummy member date
+  const memberDate = 'August 2026';
+
   return (
-    <div className="profile-container">
-      <div className="profile-header">
-        <div className="avatar-wrapper">
-          <div className="profile-avatar" style={{ overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div className="bg-bone min-h-screen">
+      <div className="max-w-md mx-auto px-6 py-12">
+        {/* Avatar Section */}
+        <div className="relative w-24 h-24 mx-auto mb-4">
+          <div className="w-24 h-24 rounded-full bg-brand-green text-white font-display font-bold text-3xl flex items-center justify-center overflow-hidden">
             {currentUser?.photoURL ? (
-              <img 
-                src={currentUser.photoURL} 
-                alt="Avatar" 
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-              />
+              <img src={currentUser.photoURL} alt="Avatar" className="w-full h-full object-cover" />
             ) : (
               getInitials()
             )}
           </div>
-          <Button 
-            variant="ghost" 
-            className="edit-avatar-btn" 
-            aria-label="Edit profile"
-          >
-            <Pencil size={16} />
-          </Button>
-        </div>
-        <h1 className="text-h1 profile-name">{currentUser?.displayName || 'CivLynQ User'}</h1>
-      </div>
-
-      <Card className="profile-list-card">
-        {/* Personal Info Row */}
-        <div className="profile-list-item-container">
-          <button 
-            className="profile-list-row" 
-            onClick={() => toggleRow('personal')}
-          >
-            <User size={20} className="row-icon" />
-            <span className="text-label row-label">Personal Info</span>
-            <ChevronRight 
-              size={20} 
-              className={`row-chevron ${expandedRow === 'personal' ? 'expanded' : ''}`} 
-            />
-          </button>
-          
-          <div className={`profile-expandable-content ${expandedRow === 'personal' ? 'open' : ''}`}>
-            <div className="expandable-inner">
-              <div className="form-group">
-                <label className="text-caption">Full Name</label>
-                <input 
-                  type="text" 
-                  className="profile-input text-body" 
-                  value={currentUser?.displayName || 'CivLynQ User'} 
-                  readOnly 
-                />
-              </div>
-              <div className="form-group">
-                <label className="text-caption">Email</label>
-                <input 
-                  type="email" 
-                  className="profile-input text-body" 
-                  value={currentUser?.email || 'user@civlynq.in'} 
-                  readOnly 
-                />
-              </div>
-              <div className="form-group">
-                <label className="text-caption">Phone Number</label>
-                <input 
-                  type="tel" 
-                  className="profile-input text-body" 
-                  value={currentUser?.phoneNumber || '+91 98765 43210'} 
-                  readOnly 
-                />
-              </div>
-            </div>
+          <div className="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-card cursor-pointer hover:bg-brand-cream transition-colors">
+            <Pencil size={14} className="text-brand-ink" />
           </div>
         </div>
 
-        {/* Drafts & Documents Row */}
-        <div className="profile-list-item-container">
-          <button 
-            className="profile-list-row" 
-            onClick={() => toggleRow('drafts')}
-          >
-            <FileText size={20} className="row-icon" />
-            <span className="text-label row-label">Drafts &amp; Documents</span>
-            <ChevronRight 
-              size={20} 
-              className={`row-chevron ${expandedRow === 'drafts' ? 'expanded' : ''}`} 
-            />
-          </button>
+        <h1 className="font-display font-bold text-2xl text-brand-ink text-center">
+          {currentUser?.displayName || 'CivLynQ User'}
+        </h1>
+        <p className="text-sm text-brand-ink-mute text-center mt-1">
+          Member since {memberDate}
+        </p>
+
+        {/* Options List */}
+        <div className="mt-8 bg-white rounded-2xl shadow-card border border-brand-cream-dk divide-y divide-brand-cream-dk overflow-hidden">
           
-          <div className={`profile-expandable-content ${expandedRow === 'drafts' ? 'open' : ''}`}>
-            <div className="expandable-inner">
-              {loadingDrafts ? (
-                <p className="text-body" style={{ textAlign: 'center', padding: 'var(--spacing-md)' }}>Loading drafts...</p>
-              ) : drafts.length === 0 ? (
-                <EmptyState
-                  icon={<FileText size={32} />}
-                  title="No drafts yet"
-                  description="Draft documents from your Roadmap steps."
-                />
-              ) : (
-                <div className="drafts-list" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)', width: '100%', padding: 'var(--spacing-sm)' }}>
-                  {drafts.map((draft) => (
-                    <Card key={draft.id} className="draft-item" style={{ padding: 'var(--spacing-md)', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xs)', border: '1px solid var(--color-border)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h4 className="text-label" style={{ margin: 0, fontWeight: '600' }}>{draft.title}</h4>
-                        <span className="text-caption" style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
-                          {new Date(draft.createdAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <p className="text-caption" style={{ margin: 0, color: 'var(--color-text-secondary)', fontSize: '0.8rem' }}>
-                        Category: {draft.templateType}
-                      </p>
-                      <div className="draft-preview-container" style={{ position: 'relative' }}>
-                        <pre className="text-body" style={{ 
-                          whiteSpace: 'pre-wrap', 
-                          fontFamily: 'inherit',
-                          background: 'var(--color-bg-secondary)', 
-                          padding: 'var(--spacing-sm)', 
-                          borderRadius: 'var(--radius-sm)',
-                          maxHeight: '150px',
-                          overflowY: 'auto',
-                          fontSize: '0.85rem',
-                          margin: 'var(--spacing-xs) 0 0 0',
-                          border: '1px solid var(--color-border-light)'
-                        }}>
+          {/* Personal Info Row */}
+          <div>
+            <button 
+              className="w-full h-14 flex items-center gap-3 px-5 hover:bg-brand-cream transition cursor-pointer"
+              onClick={() => toggleRow('personal')}
+            >
+              <User size={20} className="text-brand-green flex-shrink-0" aria-hidden="true" />
+              <span className="font-sans text-[15px] font-medium text-brand-ink flex-1 text-left">Personal Info</span>
+              <ChevronRight size={20} className={`text-brand-ink-mute transition-transform ${expandedRow === 'personal' ? 'rotate-90' : ''}`} aria-hidden="true" />
+            </button>
+            {expandedRow === 'personal' && (
+              <div className="px-5 pb-5 pt-2 bg-brand-cream/30 space-y-4 border-t border-brand-cream-dk">
+                <div>
+                  <label className="block text-xs text-brand-ink-mute mb-1">Full Name</label>
+                  <input type="text" readOnly value={currentUser?.displayName || 'CivLynQ User'} className="w-full bg-white border border-brand-cream-dk rounded-lg px-3 py-2 text-sm text-brand-ink" />
+                </div>
+                <div>
+                  <label className="block text-xs text-brand-ink-mute mb-1">Email</label>
+                  <input type="email" readOnly value={currentUser?.email || 'user@civlynq.in'} className="w-full bg-white border border-brand-cream-dk rounded-lg px-3 py-2 text-sm text-brand-ink" />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Drafts Row */}
+          <div>
+            <button 
+              className="w-full h-14 flex items-center gap-3 px-5 hover:bg-brand-cream transition cursor-pointer"
+              onClick={() => toggleRow('drafts')}
+            >
+              <FileText size={20} className="text-brand-green flex-shrink-0" aria-hidden="true" />
+              <span className="font-sans text-[15px] font-medium text-brand-ink flex-1 text-left">Drafts & Documents</span>
+              <ChevronRight size={20} className={`text-brand-ink-mute transition-transform ${expandedRow === 'drafts' ? 'rotate-90' : ''}`} aria-hidden="true" />
+            </button>
+            {expandedRow === 'drafts' && (
+              <div className="px-5 pb-5 pt-2 bg-brand-cream/30 border-t border-brand-cream-dk">
+                {loadingDrafts ? (
+                  <p className="text-sm text-brand-ink-mute text-center py-4">Loading drafts...</p>
+                ) : drafts.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-6 text-brand-ink-mute">
+                    <FileText size={24} className="mb-2 opacity-50" />
+                    <p className="text-sm">No drafts yet</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {drafts.map(draft => (
+                      <div key={draft.id} className="bg-white border border-brand-cream-dk rounded-lg p-3">
+                        <div className="flex justify-between items-center mb-1">
+                          <h4 className="font-semibold text-sm text-brand-ink">{draft.title}</h4>
+                          <span className="text-xs text-brand-ink-mute">{new Date(draft.createdAt).toLocaleDateString()}</span>
+                        </div>
+                        <p className="text-xs text-brand-ink-mute mb-2">Category: {draft.templateType}</p>
+                        <pre className="text-xs bg-bone p-2 rounded border border-brand-cream-dk whitespace-pre-wrap max-h-32 overflow-y-auto">
                           {draft.content}
                         </pre>
                       </div>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        </div>
 
-        {/* Log out Row */}
-        <div className="profile-list-item-container last-item">
+          {/* Log Out Row */}
           <button 
-            className="profile-list-row logout-row" 
-            onClick={() => toggleRow('logout')}
+            className="w-full h-14 flex items-center gap-3 px-5 cursor-pointer"
+            onClick={handleLogout}
           >
-            <span className="text-label row-label destructive-text">Log out</span>
+            <LogOut size={20} className="text-brand-orange-dk flex-shrink-0" aria-hidden="true" />
+            <span className="font-sans text-[15px] font-semibold text-brand-orange-dk flex-1 text-left">Log out</span>
           </button>
           
-          <div className={`profile-expandable-content ${expandedRow === 'logout' ? 'open' : ''}`}>
-            <div className="expandable-inner confirm-logout-box">
-              <p className="text-body logout-prompt">Are you sure you want to log out?</p>
-              <div className="logout-actions">
-                <Button variant="ghost" onClick={() => toggleRow('logout')}>Cancel</Button>
-                <Button variant="destructive" onClick={handleLogout}>Confirm</Button>
-              </div>
-            </div>
-          </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
-};
-
-export default Profile;
+}

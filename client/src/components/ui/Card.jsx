@@ -1,4 +1,4 @@
-import './Card.css';
+import '../../styles/_legacy/Card.css';
 
 export default function Card({
   children,

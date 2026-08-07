@@ -1,6 +1,6 @@
 import { AlertTriangle } from 'lucide-react';
 import Button from './Button';
-import './ErrorState.css';
+import '../../styles/_legacy/ErrorState.css';
 
 export default function ErrorState({
   message = 'Something went wrong. Please try again.',

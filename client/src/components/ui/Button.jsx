@@ -1,5 +1,5 @@
 import { Loader2 } from 'lucide-react';
-import './Button.css';
+import '../../styles/_legacy/Button.css';
 
 export default function Button({
   children,

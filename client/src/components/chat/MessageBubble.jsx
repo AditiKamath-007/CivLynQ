@@ -1,6 +1,6 @@
 import React from 'react';
 import { Bot } from 'lucide-react';
-import './MessageBubble.css';
+import '../../styles/_legacy/MessageBubble.css';
 
 export default function MessageBubble({ message, isUser, timestamp, error, onRetry }) {
   return (

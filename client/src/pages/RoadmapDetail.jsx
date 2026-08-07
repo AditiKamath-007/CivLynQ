@@ -1,16 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Clock, IndianRupee, ListChecks, ChevronDown, ChevronUp, Check, ExternalLink, PenTool, Shield, X, Sparkles, Save } from 'lucide-react';
+import { Clock, IndianRupee, ListChecks, ChevronDown, ChevronUp, Check, ExternalLink, PenTool, Shield, X, CheckCircle2 } from 'lucide-react';
 import { toArray } from '../utils/toArray';
 import { draftDocument, checkConsent, saveConsent, saveUserDraft } from '../services/api';
-import Card from '../components/ui/Card';
-import Button from '../components/ui/Button';
-import Chip from '../components/ui/Chip';
-import Tag from '../components/ui/Tag';
-import ErrorState from '../components/ui/ErrorState';
 import DraftModal from '../components/ui/DraftModal';
+import ConfirmModal from '../components/ui/ConfirmModal';
+import CompletionModal from '../components/ui/CompletionModal';
 import { useAuth } from '../context/AuthContext';
-import './RoadmapDetail.css';
 
 function CollapsibleSection({ title, content }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,20 +14,20 @@ function CollapsibleSection({ title, content }) {
   if (!content) return null;
   
   return (
-    <div className="collapsible-section">
+    <div className="mb-4">
       <button 
-        className="collapsible-toggle" 
+        className="flex items-center justify-between w-full text-left font-display font-semibold text-[17px] text-brand-ink py-3 border-b border-brand-cream-dk hover:text-brand-orange transition-colors"
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
       >
-        <span className="text-h2">{title}</span>
+        <span>{title}</span>
         {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
       </button>
-      <div className={`collapsible-content ${isOpen ? 'open' : ''}`}>
-        <div className="collapsible-content-inner text-body">
+      {isOpen && (
+        <div className="pt-3 pb-4 text-[15px] text-brand-ink-mute font-sans leading-relaxed">
           {content}
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -49,7 +45,11 @@ export default function RoadmapDetail() {
 
   const { currentUser } = useAuth();
 
-  // Draft modal state (partner's DraftModal component)
+  // Modals state
+  const [exitModalOpen, setExitModalOpen] = useState(false);
+  const [completionModalOpen, setCompletionModalOpen] = useState(false);
+
+  // Draft modal state
   const [draftModalOpen, setDraftModalOpen] = useState(false);
   const [draftTitle, setDraftTitle] = useState('');
   const [draftContent, setDraftContent] = useState('');
@@ -113,7 +113,6 @@ export default function RoadmapDetail() {
     });
   };
 
-  // Generates the draft using the API and opens the DraftModal
   const executeDraft = async (taskStr) => {
     setDraftTitle(taskStr);
     setDraftContent('');
@@ -135,13 +134,11 @@ export default function RoadmapDetail() {
     }
   };
 
-  // Main click handler — checks auth and consent before drafting
   const handleDraftClick = async (taskStr) => {
     if (!currentUser) {
       navigate('/login');
       return;
     }
-
     if (hasConsented) {
       await executeDraft(taskStr);
     } else {
@@ -191,13 +188,21 @@ export default function RoadmapDetail() {
   };
 
   if (loading) {
-    return <div className="roadmap-detail-page">Loading...</div>;
+    return <div className="bg-bone min-h-screen flex items-center justify-center font-sans text-brand-ink-mute">Loading...</div>;
   }
 
   if (error || !workflow) {
     return (
-      <div className="roadmap-detail-page">
-        <ErrorState message="Roadmap not found or invalid." onRetry={() => navigate('/')} />
+      <div className="bg-bone min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="font-display font-bold text-2xl text-brand-ink mb-4">Roadmap not found</h2>
+          <button 
+            onClick={() => navigate('/')}
+            className="px-6 py-2 bg-brand-orange text-white rounded-pill font-semibold"
+          >
+            Go Home
+          </button>
+        </div>
       </div>
     );
   }
@@ -216,81 +221,61 @@ export default function RoadmapDetail() {
   const officialUrl = currentStep.officialUrl || (currentStep.links && currentStep.links[0]?.url);
 
   return (
-    <div className="roadmap-detail-page">
-      {/* Desktop Sidebar */}
-      <aside className="roadmap-sidebar">
-        <h1 className="text-h1 sidebar-title">{workflow.goal || workflow.title || 'Your Roadmap'}</h1>
-        {workflow.summary && <p className="text-body sidebar-summary">{workflow.summary}</p>}
-        
-        <div className="sidebar-meta">
-          <Chip icon={Clock}>{workflow.totalEstimatedTime || 'N/A'}</Chip>
-          <Chip icon={IndianRupee}>{workflow.totalEstimatedCost || 'Free'}</Chip>
-          <Chip icon={ListChecks}>{steps.length} steps</Chip>
-        </div>
-
-        <nav className="desktop-stepper">
-          {steps.map((step, idx) => (
-            <button
-              key={idx}
-              className={`step-item ${currentStepIdx === idx ? 'active' : ''} ${completedSteps[idx] ? 'completed' : ''}`}
-              onClick={() => setCurrentStepIdx(idx)}
-            >
-              <div className="step-indicator">
-                {completedSteps[idx] ? <Check size={14} className="check-icon" /> : <span>{idx + 1}</span>}
-              </div>
-              <span className="step-title">{step.title}</span>
-            </button>
-          ))}
-        </nav>
-      </aside>
-
-      {/* Mobile Horizontal Stepper */}
-      <div className="mobile-stepper">
-        <div className="mobile-stepper-inner">
-          {steps.map((step, idx) => (
-            <Chip 
-              key={idx}
-              active={currentStepIdx === idx}
-              completed={completedSteps[idx]}
-              clickable
-              onClick={() => setCurrentStepIdx(idx)}
-              className="mobile-step-chip"
-            >
-              {completedSteps[idx] ? <Check size={14} /> : idx + 1}
-            </Chip>
-          ))}
-        </div>
+    <div className="bg-bone min-h-screen pb-24 relative overflow-x-hidden">
+      
+      {/* ALWAYS VISIBLE EXIT BUTTON */}
+      <div className="absolute top-6 right-6 md:right-10 z-20">
+        <button
+          onClick={() => setExitModalOpen(true)}
+          className="h-10 px-4 rounded-pill border border-brand-cream-dk bg-white text-brand-ink-mute hover:bg-brand-cream hover:text-brand-ink font-medium text-sm flex items-center gap-2 transition-all shadow-sm"
+        >
+          <X size={16} /> Exit Journey
+        </button>
       </div>
 
-      {/* Main Content */}
-      <main className="roadmap-main">
-        <Card className="step-card">
-          <header className="step-header">
-            <h1 className="text-h1">{currentStep.title}</h1>
+      <div className="max-w-3xl mx-auto px-4 md:px-6 pt-20 md:pt-16">
+        
+        {/* Top: title & progress indicator */}
+        <div className="mb-6">
+          <h1 className="font-display font-bold text-2xl md:text-3xl text-brand-ink pr-32">
+            {workflow.goal || workflow.title}
+          </h1>
+          <p className="text-[15px] font-medium text-brand-orange mt-2">
+            Step {currentStepIdx + 1} of {steps.length}
+          </p>
+        </div>
+
+        {/* Step Content Card */}
+        <div className="bg-white rounded-2xl shadow-card border border-brand-cream-dk p-6 md:p-8 mt-4">
+          <header className="mb-4">
+            <h2 className="font-display font-bold text-xl text-brand-ink mb-2">{currentStep.title}</h2>
             {department && (
-              <Tag variant="olive">{department}</Tag>
+              <span className="inline-block px-3 py-1 bg-brand-green-accent/15 text-brand-green font-medium text-xs rounded-pill">
+                {department}
+              </span>
             )}
           </header>
           
-          <p className="text-body step-desc">{currentStep.description}</p>
+          <p className="text-[15px] text-brand-ink-mute leading-relaxed mb-6">{currentStep.description}</p>
 
-          <div className="step-meta">
-            <div className="meta-item">
-              <span className="meta-label">Est. Fee:</span>
-              <span className="meta-value">{fee}</span>
+          <div className="flex flex-wrap gap-4 mb-8 bg-brand-cream/30 p-4 rounded-xl border border-brand-cream-dk">
+            <div className="flex-1 min-w-[120px]">
+              <span className="block text-xs font-semibold text-brand-ink-mute uppercase tracking-wider mb-1">Est. Fee</span>
+              <span className="text-[15px] text-brand-ink font-medium">{fee}</span>
             </div>
-            <div className="meta-item">
-              <span className="meta-label">Est. Time:</span>
-              <span className="meta-value">{time}</span>
+            <div className="flex-1 min-w-[120px]">
+              <span className="block text-xs font-semibold text-brand-ink-mute uppercase tracking-wider mb-1">Est. Time</span>
+              <span className="text-[15px] text-brand-ink font-medium">{time}</span>
             </div>
-            <div className="meta-item">
-              <Tag variant={currentStep.canBeDoneOnline ? 'olive' : 'muted'}>
+            <div className="flex-1 min-w-[120px]">
+              <span className="block text-xs font-semibold text-brand-ink-mute uppercase tracking-wider mb-1">Method</span>
+              <span className={`inline-block px-2 py-0.5 text-xs font-medium rounded ${currentStep.canBeDoneOnline ? 'bg-brand-green-accent/20 text-brand-green' : 'bg-brand-cream-dk text-brand-ink-mute'}`}>
                 {currentStep.canBeDoneOnline ? 'Online' : 'In-person'}
-              </Tag>
+              </span>
             </div>
           </div>
 
-          <div className="step-content">
+          <div className="space-y-2 mb-8">
             <CollapsibleSection 
               title="Why this step is required" 
               content={currentStep.whyThisStepIsRequired} 
@@ -299,136 +284,170 @@ export default function RoadmapDetail() {
               title="In plain terms" 
               content={currentStep.legalJargonSimplified} 
             />
+          </div>
 
-            {prereqs.length > 0 && (
-              <div className="content-section">
-                <h3 className="text-h2">Prerequisites</h3>
-                <ul className="bullet-list">
-                  {prereqs.map((item, idx) => (
-                    <li key={idx} className="text-body">{item}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+          {prereqs.length > 0 && (
+            <div className="mb-8">
+              <h3 className="font-display font-semibold text-lg text-brand-ink mb-3">Prerequisites</h3>
+              <ul className="list-disc list-outside ml-5 space-y-1 text-[15px] text-brand-ink-mute">
+                {prereqs.map((item, idx) => (
+                  <li key={idx}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
 
-            {docs.length > 0 && (
-              <div className="content-section">
-                <h3 className="text-h2">Required Documents</h3>
-                <div className="checklist">
-                  {docs.map((doc, idx) => {
-                    const key = `doc_${currentStepIdx}_${idx}`;
-                    return (
-                      <label key={idx} className="check-item">
+          {docs.length > 0 && (
+            <div className="mb-8">
+              <h3 className="font-display font-semibold text-lg text-brand-ink mb-3">Required Documents</h3>
+              <div className="space-y-3">
+                {docs.map((doc, idx) => {
+                  const key = `doc_${currentStepIdx}_${idx}`;
+                  return (
+                    <label key={idx} className="flex items-start gap-3 cursor-pointer group">
+                      <div className="relative flex items-center justify-center w-5 h-5 mt-0.5 border-2 rounded transition-colors border-brand-cream-dk group-hover:border-brand-orange flex-shrink-0">
                         <input 
                           type="checkbox" 
                           checked={!!checkedItems[key]} 
                           onChange={() => toggleCheck(key)} 
+                          className="opacity-0 absolute inset-0 cursor-pointer"
                         />
-                        <span className="text-body">{doc}</span>
-                      </label>
-                    );
-                  })}
-                </div>
+                        {checkedItems[key] && <Check size={14} className="text-brand-orange" />}
+                      </div>
+                      <span className={`text-[15px] transition-colors ${checkedItems[key] ? 'text-brand-ink-mute line-through' : 'text-brand-ink'}`}>
+                        {doc}
+                      </span>
+                    </label>
+                  );
+                })}
               </div>
-            )}
+            </div>
+          )}
 
-            {subTasks.length > 0 && (
-              <div className="content-section">
-                <h3 className="text-h2">Sub-tasks</h3>
-                <div className="checklist">
-                  {subTasks.map((task, idx) => {
-                    const key = `task_${currentStepIdx}_${idx}`;
-                    const taskStr = typeof task === 'string' ? task : task.title;
-                    const isDraftable = typeof task === 'object' ? task.isDocumentDraftable : taskStr.toLowerCase().includes('draftable') || taskStr.toLowerCase().includes('draft') || taskStr.toLowerCase().includes('form') || taskStr.toLowerCase().includes('affidavit');
-                    
-                    return (
-                      <div key={idx} className="subtask-row">
-                        <label className="check-item">
+          {subTasks.length > 0 && (
+            <div className="mb-8">
+              <h3 className="font-display font-semibold text-lg text-brand-ink mb-3">Sub-tasks</h3>
+              <div className="space-y-3">
+                {subTasks.map((task, idx) => {
+                  const key = `task_${currentStepIdx}_${idx}`;
+                  const taskStr = typeof task === 'string' ? task : task.title;
+                  const isDraftable = typeof task === 'object' ? task.isDocumentDraftable : taskStr.toLowerCase().includes('draftable') || taskStr.toLowerCase().includes('draft') || taskStr.toLowerCase().includes('form') || taskStr.toLowerCase().includes('affidavit');
+                  
+                  return (
+                    <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-bone rounded-lg border border-brand-cream-dk">
+                      <label className="flex items-start gap-3 cursor-pointer group flex-1">
+                        <div className="relative flex items-center justify-center w-5 h-5 mt-0.5 border-2 rounded transition-colors border-brand-cream-dk group-hover:border-brand-orange flex-shrink-0">
                           <input 
                             type="checkbox" 
                             checked={!!checkedItems[key]} 
                             onChange={() => toggleCheck(key)} 
+                            className="opacity-0 absolute inset-0 cursor-pointer"
                           />
-                          <span className="text-body">{taskStr}</span>
-                        </label>
-                        {isDraftable && (
-                          <Button 
-                            variant="secondary" 
-                            size="sm" 
-                            icon={PenTool} 
-                            className="draft-btn"
-                            onClick={() => handleDraftClick(taskStr)}
-                          >
-                            Draft this
-                          </Button>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                          {checkedItems[key] && <Check size={14} className="text-brand-orange" />}
+                        </div>
+                        <span className={`text-[15px] transition-colors ${checkedItems[key] ? 'text-brand-ink-mute line-through' : 'text-brand-ink'}`}>
+                          {taskStr}
+                        </span>
+                      </label>
+                      {isDraftable && (
+                        <button 
+                          onClick={() => handleDraftClick(taskStr)}
+                          className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white border border-brand-cream-dk text-brand-ink rounded-lg hover:bg-brand-cream hover:border-brand-orange transition-colors self-start sm:self-auto"
+                        >
+                          <PenTool size={14} /> Draft this
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-            )}
+            </div>
+          )}
 
-            {currentStep.tips && (
-              <div className="tips-callout text-body">
-                <strong>Tip:</strong> {typeof currentStep.tips === 'string' ? currentStep.tips : currentStep.tips.join(' ')}
-              </div>
-            )}
+          {currentStep.tips && (
+            <div className="mb-8 p-4 bg-brand-green-accent/10 border-l-4 border-brand-green-accent rounded-r-lg">
+              <span className="font-semibold text-brand-green">Tip: </span>
+              <span className="text-[15px] text-brand-ink">{typeof currentStep.tips === 'string' ? currentStep.tips : currentStep.tips.join(' ')}</span>
+            </div>
+          )}
 
-            {mistakes.length > 0 && (
-              <div className="mistakes-callout">
-                <h4 className="text-label error-text">Common mistakes to avoid</h4>
-                <ul className="bullet-list error-text">
-                  {mistakes.map((item, idx) => (
-                    <li key={idx} className="text-body">{item}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+          {mistakes.length > 0 && (
+            <div className="mb-8 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg">
+              <h4 className="font-semibold text-red-700 mb-2">Common mistakes to avoid</h4>
+              <ul className="list-disc list-outside ml-5 space-y-1 text-[15px] text-red-700/80">
+                {mistakes.map((item, idx) => (
+                  <li key={idx}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
 
-            {officialUrl && (
-              <div className="content-section">
-                <Button 
-                  variant="primary" 
-                  icon={ExternalLink} 
-                  onClick={() => window.open(officialUrl, '_blank')}
-                >
-                  Official Link
-                </Button>
-              </div>
-            )}
-          </div>
+          {officialUrl && (
+            <div className="mb-4">
+              <button 
+                className="flex items-center gap-2 px-5 py-2.5 bg-brand-orange-lt text-brand-orange hover:bg-brand-orange hover:text-white rounded-pill font-medium text-sm transition-colors"
+                onClick={() => window.open(officialUrl, '_blank')}
+              >
+                <ExternalLink size={16} /> Official Link
+              </button>
+            </div>
+          )}
 
-          <footer className="step-footer">
-            <Button 
-              variant="ghost" 
+          {/* Footer Actions */}
+          <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-4 mt-10 pt-6 border-t border-brand-cream-dk">
+            <button
+              className="w-full sm:w-auto text-brand-ink-mute hover:text-brand-ink font-medium px-4 py-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={() => setCurrentStepIdx(prev => Math.max(0, prev - 1))}
               disabled={currentStepIdx === 0}
             >
               Previous
-            </Button>
-            
-            <div className="right-actions">
-              <Button 
-                variant={completedSteps[currentStepIdx] ? 'secondary' : 'primary'} 
+            </button>
+
+            <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+              <button
+                className={`px-4 py-2 rounded-pill text-sm font-medium transition-colors ${
+                  completedSteps[currentStepIdx] 
+                    ? 'bg-brand-cream text-brand-ink-mute hover:bg-brand-cream-dk border border-brand-cream-dk'
+                    : 'bg-white border border-brand-cream-dk text-brand-ink hover:border-brand-orange hover:text-brand-orange'
+                }`}
                 onClick={markStepComplete}
               >
                 {completedSteps[currentStepIdx] ? 'Mark Incomplete' : 'Mark Complete'}
-              </Button>
-              
-              <Button 
-                variant="primary" 
-                onClick={() => setCurrentStepIdx(prev => Math.min(steps.length - 1, prev + 1))}
-                disabled={currentStepIdx === steps.length - 1}
-              >
-                Next
-              </Button>
-            </div>
-          </footer>
-        </Card>
-      </main>
+              </button>
 
-      {/* Partner's DraftModal — enhanced with save-to-profile */}
+              {currentStepIdx === steps.length - 1 ? (
+                <button
+                  className="h-11 px-6 rounded-pill bg-brand-green hover:bg-brand-green-lt text-white font-display font-semibold flex items-center gap-2 shadow-card hover:shadow-card-hov transition-all duration-200"
+                  onClick={() => setCompletionModalOpen(true)}
+                >
+                  <CheckCircle2 size={18} /> Finish Journey
+                </button>
+              ) : (
+                <button
+                  className="h-10 px-6 rounded-pill bg-brand-orange hover:bg-brand-orange-dk text-white font-display font-semibold transition-all duration-200 shadow-card"
+                  onClick={() => setCurrentStepIdx(prev => Math.min(steps.length - 1, prev + 1))}
+                >
+                  Next
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ConfirmModal 
+        isOpen={exitModalOpen}
+        onClose={() => setExitModalOpen(false)}
+        onConfirm={() => navigate('/dashboard')}
+        title="Exit this journey?"
+        body="Your progress is saved. You can return anytime from the dashboard."
+        confirmText="Exit"
+        confirmStyle="secondary"
+      />
+
+      <CompletionModal isOpen={completionModalOpen} />
+
+      {/* Legacy Draft Modal integration - assuming DraftModal uses its own styling or is already Tailwind compatible */}
       <DraftModal
         isOpen={draftModalOpen}
         onClose={() => setDraftModalOpen(false)}
@@ -443,56 +462,62 @@ export default function RoadmapDetail() {
 
       {/* AI Consent Modal */}
       {showConsentModal && (
-        <div className="modal-overlay">
-          <div className="modal-card">
-            <div className="modal-header">
-              <h2 className="text-h2 modal-title" style={{ color: 'var(--ink)' }}>
-                <Shield className="consent-scope-icon" style={{ verticalAlign: 'middle', marginRight: 'var(--space-2)' }} /> AI Drafter Permissions
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-pop p-6 max-w-md w-full relative">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="font-display font-bold text-lg text-brand-ink flex items-center gap-2">
+                <Shield className="text-brand-orange" size={20} /> AI Drafter Permissions
               </h2>
-              <button className="modal-close-btn" onClick={() => setShowConsentModal(false)}>
+              <button className="text-brand-ink-mute hover:text-brand-ink" onClick={() => setShowConsentModal(false)}>
                 <X size={20} />
               </button>
             </div>
-            <div className="modal-body text-body">
+            
+            <div className="text-[15px] text-brand-ink-mute space-y-4">
               <p>To draft <strong>{pendingDraftTask}</strong> on your behalf, the AI Drafter requires your authorization:</p>
               
-              <div className="consent-scope-list">
-                <div className="consent-scope-item">
-                  <div className="consent-scope-icon"><Check size={16} /></div>
+              <div className="space-y-3 bg-brand-cream/30 p-4 rounded-xl border border-brand-cream-dk">
+                <div className="flex gap-3">
+                  <Check size={16} className="text-brand-green mt-1 flex-shrink-0" />
                   <div>
-                    <strong>Profile Integration</strong>
-                    <p className="text-caption" style={{ margin: 0 }}>Autofills templates with your name, email, and contact info if available.</p>
+                    <strong className="text-brand-ink block text-sm">Profile Integration</strong>
+                    <p className="text-xs">Autofills templates with your name, email, and contact info if available.</p>
                   </div>
                 </div>
-                
-                <div className="consent-scope-item">
-                  <div className="consent-scope-icon"><Check size={16} /></div>
+                <div className="flex gap-3">
+                  <Check size={16} className="text-brand-green mt-1 flex-shrink-0" />
                   <div>
-                    <strong>AI Generation & Processing</strong>
-                    <p className="text-caption" style={{ margin: 0 }}>Uses secure AI processing to compose drafts relevant to <em>{workflow.goal || workflow.title}</em>.</p>
+                    <strong className="text-brand-ink block text-sm">AI Generation & Processing</strong>
+                    <p className="text-xs">Uses secure AI processing to compose drafts relevant to <em>{workflow.goal || workflow.title}</em>.</p>
                   </div>
                 </div>
-                
-                <div className="consent-scope-item">
-                  <div className="consent-scope-icon"><Check size={16} /></div>
+                <div className="flex gap-3">
+                  <Check size={16} className="text-brand-green mt-1 flex-shrink-0" />
                   <div>
-                    <strong>Cloud Database Storage</strong>
-                    <p className="text-caption" style={{ margin: 0 }}>Saves the completed draft securely to your profile drafts database.</p>
+                    <strong className="text-brand-ink block text-sm">Cloud Database Storage</strong>
+                    <p className="text-xs">Saves the completed draft securely to your profile drafts database.</p>
                   </div>
                 </div>
               </div>
 
-              <div className="consent-warning">
+              <p className="text-xs italic bg-bone p-3 rounded text-brand-ink-mute border border-brand-cream-dk">
                 By granting permissions, you authorize the AI Drafter to construct this draft. You retain full ownership and can review/edit the document before finalized usage.
-              </div>
+              </p>
             </div>
-            <div className="modal-footer">
-              <Button variant="ghost" onClick={() => setShowConsentModal(false)}>
+            
+            <div className="flex justify-end gap-3 mt-6">
+              <button 
+                className="h-10 px-4 rounded-pill border border-brand-cream-dk bg-white text-brand-ink font-medium hover:bg-brand-cream transition-colors"
+                onClick={() => setShowConsentModal(false)}
+              >
                 Cancel
-              </Button>
-              <Button variant="primary" onClick={handleGrantConsent}>
+              </button>
+              <button 
+                className="h-10 px-4 rounded-pill bg-brand-orange hover:bg-brand-orange-dk text-white font-semibold shadow-card transition-colors"
+                onClick={handleGrantConsent}
+              >
                 Grant Permissions
-              </Button>
+              </button>
             </div>
           </div>
         </div>

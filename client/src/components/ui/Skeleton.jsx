@@ -1,4 +1,4 @@
-import './Skeleton.css';
+import '../../styles/_legacy/Skeleton.css';
 
 export default function Skeleton({ variant = 'text', width, height, className = '', style = {} }) {
   const mergedStyle = {

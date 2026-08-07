@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { MessageCircle, FileText, Home, LayoutGrid, User } from 'lucide-react';
-import './BottomTabNav.css';
+import '../../styles/_legacy/BottomTabNav.css';
 
 const tabs = [
   { to: '/ai', icon: MessageCircle, label: 'AI' },

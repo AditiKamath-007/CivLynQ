@@ -1,6 +1,6 @@
 import React from 'react';
 import { Bot } from 'lucide-react';
-import './TypingIndicator.css';
+import '../../styles/_legacy/TypingIndicator.css';
 
 export default function TypingIndicator() {
   return (

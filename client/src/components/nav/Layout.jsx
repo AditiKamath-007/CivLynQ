@@ -1,30 +1,38 @@
+import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import TopNav from './TopNav';
-import BottomTabNav from './BottomTabNav';
-import './Layout.css';
+import Sidebar from './Sidebar';
+import Topbar from './Topbar';
+import MobileDrawer from './MobileDrawer';
+import MobileBottomNav from './MobileBottomNav';
 
 export default function Layout() {
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
 
-  // Pages where nav should be collapsed (back arrow + progress)
-  const isRoadmapFlow =
-    location.pathname.startsWith('/roadmap/questions') ||
-    location.pathname.startsWith('/roadmap/');
-
-  // Pages where we hide all nav (login)
-  const isFullscreen = location.pathname === '/login';
+  const isFullscreen = location.pathname === '/login' || location.pathname === '/signup';
 
   if (isFullscreen) {
     return <Outlet />;
   }
 
   return (
-    <>
-      <TopNav collapsed={isRoadmapFlow} />
-      <main className={`layout-content ${!isRoadmapFlow ? 'sidebar-active' : ''}`}>
-        <Outlet />
-      </main>
-      <BottomTabNav />
-    </>
+    <div className="flex h-screen overflow-hidden bg-bone">
+      {/* Desktop Sidebar */}
+      <Sidebar />
+      
+      {/* Mobile Nav Drawer */}
+      <MobileDrawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 md:ml-[64px] transition-all duration-[220ms]">
+        <Topbar onOpenDrawer={() => setDrawerOpen(true)} />
+        
+        <main className="flex-1 overflow-y-auto overflow-x-hidden pb-16 md:pb-0 relative">
+          <Outlet />
+        </main>
+
+        <MobileBottomNav />
+      </div>
+    </div>
   );
 }

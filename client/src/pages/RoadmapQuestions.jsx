@@ -7,7 +7,7 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Skeleton from '../components/ui/Skeleton';
 import ErrorState from '../components/ui/ErrorState';
-import './RoadmapQuestions.css';
+import '../styles/_legacy/RoadmapQuestions.css';
 
 export default function RoadmapQuestions() {
   const [searchParams] = useSearchParams();

@@ -6,7 +6,7 @@ import Button from '../components/ui/Button';
 import ErrorState from '../components/ui/ErrorState';
 import Tag from '../components/ui/Tag';
 import { schemes } from '../data/schemes';
-import './SchemeDetail.css';
+import '../styles/_legacy/SchemeDetail.css';
 
 export default function SchemeDetail() {
   const { id } = useParams();

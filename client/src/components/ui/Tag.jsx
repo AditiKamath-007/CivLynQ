@@ -1,4 +1,4 @@
-import './Tag.css';
+import '../../styles/_legacy/Tag.css';
 
 export default function Tag({ children, variant = 'olive', className = '', ...props }) {
   return (

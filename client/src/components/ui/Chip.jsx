@@ -1,4 +1,4 @@
-import './Chip.css';
+import '../../styles/_legacy/Chip.css';
 
 export default function Chip({
   children,

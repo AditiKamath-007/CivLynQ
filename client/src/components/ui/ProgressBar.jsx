@@ -1,4 +1,4 @@
-import './ProgressBar.css';
+import '../../styles/_legacy/ProgressBar.css';
 
 export default function ProgressBar({ value = 0, max = 100, size, className = '' }) {
   const pct = Math.min(100, Math.max(0, (value / max) * 100));
