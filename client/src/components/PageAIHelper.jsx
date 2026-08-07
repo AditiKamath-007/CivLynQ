@@ -3,6 +3,18 @@ import { useLocation } from 'react-router-dom';
 import { Sparkles, X, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getPageContext } from '../lib/aiPageContext';
+import { askHelper } from '../services/api';
+
+const formatMessage = (text) => {
+  if (typeof text !== 'string') return text;
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>;
+    }
+    return part;
+  });
+};
 
 export default function PageAIHelper() {
   const location = useLocation();
@@ -17,7 +29,44 @@ export default function PageAIHelper() {
   // 3.2 — Visibility rules
   const isHidden = pathname.startsWith('/ai') || pathname.startsWith('/login') || pathname.startsWith('/signup');
 
-  const pageContext = getPageContext(pathname);
+  const pageContext = { ...getPageContext(pathname) };
+  let apiContextData = { page: pageContext.name };
+
+  if (pathname.startsWith('/roadmap/')) {
+    const roadmapId = pathname.split('/').pop();
+    const dataStr = localStorage.getItem(roadmapId) || localStorage.getItem(`roadmap-${roadmapId}`);
+    if (dataStr) {
+      try {
+        const workflow = JSON.parse(dataStr);
+        const compKey = roadmapId.startsWith('roadmap-') ? `completed-${roadmapId}` : `completed-roadmap-${roadmapId}`;
+        const savedComp = localStorage.getItem(compKey) || localStorage.getItem(`completed-${roadmapId}`);
+        const parsedComp = savedComp ? JSON.parse(savedComp) : {};
+        
+        let currentStepIdx = 0;
+        if (workflow.steps) {
+          const firstIncomplete = workflow.steps.findIndex((_, idx) => !parsedComp[idx]);
+          if (firstIncomplete > 0) currentStepIdx = firstIncomplete;
+          
+          const currentStep = workflow.steps[currentStepIdx];
+          if (currentStep) {
+            apiContextData = {
+              goal: workflow.goal || workflow.title,
+              stepTitle: currentStep.title,
+              stepDescription: currentStep.description
+            };
+            pageContext.subtitle = `Step ${currentStepIdx + 1}: ${currentStep.title}`;
+            pageContext.chips = [
+              `Explain "${currentStep.title}"`,
+              `What documents do I need for this?`,
+              `I'm stuck on this step`
+            ];
+          }
+        }
+      } catch (e) {
+        console.error("Error reading roadmap for AI context", e);
+      }
+    }
+  }
 
   useEffect(() => {
     // Scroll to bottom when messages change
@@ -28,7 +77,7 @@ export default function PageAIHelper() {
 
   if (isHidden) return null;
 
-  const handleSend = (text) => {
+  const handleSend = async (text) => {
     if (!text.trim()) return;
 
     // Add user message
@@ -40,15 +89,27 @@ export default function PageAIHelper() {
     const botMsgId = Date.now();
     setMessages((prev) => [...prev, { id: botMsgId, role: 'bot', content: '', loading: true, timestamp: new Date() }]);
 
-    // 🤖 AI INTEGRATION POINT 3: Send message
-    // Replace this with a call to your lynqbot API endpoint
-    setTimeout(() => {
+    try {
+      const response = await askHelper(text, apiContextData);
+      let answerText = response?.answer;
+      
+      if (typeof answerText !== 'string') {
+        // Fallback if AI hallucinates an object instead of a string
+        answerText = JSON.stringify(answerText || response);
+      }
+      
       setMessages((prev) => prev.map((msg) => 
         msg.id === botMsgId 
-          ? { ...msg, loading: false, content: `(Mock response) I see you're on the ${pageContext.name} page. The AI integration is coming soon — for now, this is a UI placeholder.` }
+          ? { ...msg, loading: false, content: answerText }
           : msg
       ));
-    }, 1500);
+    } catch (error) {
+      setMessages((prev) => prev.map((msg) => 
+        msg.id === botMsgId 
+          ? { ...msg, loading: false, content: 'Something went wrong. Please try again.' }
+          : msg
+      ));
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -64,7 +125,7 @@ export default function PageAIHelper() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-brand-orange hover:bg-brand-orange-dk shadow-card-hov hover:shadow-pop text-white flex items-center justify-center transition-all duration-200 hover:scale-105"
+          className="fixed bottom-24 md:bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-brand-orange hover:bg-brand-orange-dk shadow-card-hov hover:shadow-pop text-white flex items-center justify-center transition-all duration-200 hover:scale-105"
           aria-label="Open AI helper for this page"
         >
           <Sparkles size={24} />
@@ -137,7 +198,7 @@ export default function PageAIHelper() {
                     return (
                       <div key={idx} className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
                         <div 
-                          className={`max-w-[85%] px-4 py-3 font-sans text-[15px] ${
+                          className={`max-w-[85%] px-4 py-3 font-sans text-[15px] whitespace-pre-wrap leading-relaxed ${
                             isUser 
                               ? 'bg-brand-orange text-white rounded-2xl rounded-tr-sm' 
                               : 'bg-white border border-brand-cream-dk rounded-2xl rounded-tl-sm text-brand-ink shadow-card'
@@ -150,7 +211,7 @@ export default function PageAIHelper() {
                               <div className="w-1.5 h-1.5 bg-brand-ink-mute rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                             </div>
                           ) : (
-                            msg.content
+                            formatMessage(msg.content)
                           )}
                         </div>
                         {msg.timestamp && (

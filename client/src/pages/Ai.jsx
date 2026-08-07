@@ -11,6 +11,17 @@ const SUGGESTED_CHIPS = [
   "Steps to register a company in India."
 ];
 
+const formatMessage = (text) => {
+  if (typeof text !== 'string') return text;
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>;
+    }
+    return part;
+  });
+};
+
 export default function Ai() {
   const location = useLocation();
   const [messages, setMessages] = useState([]);
@@ -51,9 +62,14 @@ export default function Ai() {
 
       const response = await askHelper(text, context);
       
+      let answerText = response?.answer;
+      if (typeof answerText !== 'string') {
+        answerText = JSON.stringify(answerText || response);
+      }
+      
       const botMsg = {
         id: (Date.now() + 1).toString(),
-        text: response.answer || response,
+        text: answerText,
         isUser: false,
         timestamp: new Date().toISOString()
       };
@@ -125,13 +141,13 @@ export default function Ai() {
                   </div>
                 )}
                 <div 
-                  className={`max-w-[80%] px-4 py-3 font-sans text-[15px] ${
+                  className={`max-w-[80%] px-4 py-3 font-sans text-[15px] whitespace-pre-wrap leading-relaxed ${
                     msg.isUser 
                       ? 'bg-brand-orange text-white rounded-2xl rounded-tr-sm' 
                       : 'bg-white border border-brand-cream-dk text-brand-ink rounded-2xl rounded-tl-sm shadow-card'
                   } ${msg.isError ? 'border-red-500 text-red-600' : ''}`}
                 >
-                  {msg.text}
+                  {formatMessage(msg.text)}
                 </div>
                 {msg.timestamp && (
                   <div className={`text-[11px] text-brand-ink-mute mt-1 mx-1 ${msg.isUser ? 'text-right' : 'text-left'}`}>
