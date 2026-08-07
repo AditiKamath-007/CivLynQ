@@ -23,20 +23,19 @@ const Dashboard = () => {
         if (key && key.startsWith('roadmap-')) {
           try {
             const data = JSON.parse(localStorage.getItem(key));
-            const id = key.replace('roadmap-', '');
             
             // Get completed steps
-            let completedSteps = [];
-            const completedKey = `completed-${id}`;
-            const completedData = localStorage.getItem(completedKey);
+            let completedStepsCount = 0;
+            const completedData = localStorage.getItem(`completed-${key}`) || localStorage.getItem(`completed-${key.replace('roadmap-', '')}`);
             if (completedData) {
-              completedSteps = JSON.parse(completedData);
+              const parsed = JSON.parse(completedData);
+              completedStepsCount = Array.isArray(parsed) ? parsed.length : Object.values(parsed).filter(Boolean).length;
             }
 
             loadedJourneys.push({
-              id,
+              id: key,
               ...data,
-              completedCount: completedSteps.length,
+              completedCount: completedStepsCount,
               totalSteps: data.steps ? data.steps.length : 0,
             });
           } catch (e) {

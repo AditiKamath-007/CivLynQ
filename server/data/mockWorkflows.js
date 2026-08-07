@@ -20,145 +20,244 @@ const defaultQuestions = [
 ];
 
 const mockAadhaarWorkflow = {
+  goal: "Apply for a New Aadhaar Card",
   title: "Apply for a New Aadhaar Card",
-  description: "Step-by-step guide to applying for a new Aadhaar card as a Resident Indian.",
+  summary: "Step-by-step guide to applying for a new Aadhaar card as a Resident Indian.",
+  totalEstimatedTime: "1-2 weeks",
+  totalEstimatedCost: "Free",
   steps: [
     {
       id: "step_1",
       title: "Locate Enrollment Center",
       description: "Find the nearest Aadhaar enrollment center using the UIDAI portal.",
-      status: "pending",
+      governmentDepartment: "UIDAI",
       agency: "UIDAI",
-      estimatedTime: "10 mins",
+      estimatedFee: "Free",
       cost: "Free",
-      requiredDocuments: [],
-      tips: ["Check if the center requires prior online booking or accepts walk-ins."],
-      links: [{ text: "UIDAI Portal - Locate Center", url: "https://appointments.uidai.gov.in/easearch.aspx" }],
-      templates: []
+      estimatedDays: "10 mins",
+      estimatedTime: "10 mins",
+      canBeDoneOnline: true,
+      whyThisStepIsRequired: "UIDAI biometric enrollment must take place at an authorized enrollment center.",
+      legalJargonSimplified: "You need an official center to take your fingerprints and iris scans.",
+      prerequisites: ["Proof of Identity", "Proof of Address"],
+      requiredDocuments: ["Proof of Identity (e.g. Voter ID, PAN)", "Proof of Address (e.g. Electricity Bill, Ration Card)"],
+      subTasks: [
+        { title: "Search enrollment center near pincode", isDocumentDraftable: false },
+        { title: "Book an online appointment slot if available", isDocumentDraftable: false }
+      ],
+      tips: "Check if the center requires prior online booking or accepts walk-ins.",
+      commonMistakes: ["Forgetting original identity documents.", "Spelling errors on the offline form."],
+      officialUrl: "https://appointments.uidai.gov.in/easearch.aspx"
     },
     {
       id: "step_2",
       title: "Fill Enrollment Form",
       description: "Download and fill the Aadhaar enrollment form before visiting.",
-      status: "pending",
+      governmentDepartment: "UIDAI",
       agency: "UIDAI",
-      estimatedTime: "15 mins",
+      estimatedFee: "Free",
       cost: "Free",
-      requiredDocuments: [],
-      tips: ["Use capital letters to fill the form.", "Ensure mobile number is correctly entered as it will be linked."],
-      links: [{ text: "Download Form", url: "https://uidai.gov.in/images/aadhaar_enrolment_correction_form_version_2.1.pdf" }],
-      templates: []
+      estimatedDays: "15 mins",
+      estimatedTime: "15 mins",
+      canBeDoneOnline: true,
+      whyThisStepIsRequired: "The form captures demographic details like name, address, and DOB.",
+      legalJargonSimplified: "Fill in basic personal information accurately in capital letters.",
+      prerequisites: ["Locate Center"],
+      requiredDocuments: ["Completed Enrollment Form"],
+      subTasks: [
+        { title: "Download UIDAI enrollment form PDF", isDocumentDraftable: false },
+        { title: "Draft Aadhaar Self-Declaration Affidavit", isDocumentDraftable: true }
+      ],
+      tips: "Use capital letters to fill the form. Ensure mobile number is correctly entered as it will be linked.",
+      commonMistakes: ["Entering invalid phone number", "Mismatched address with proof document"],
+      officialUrl: "https://uidai.gov.in/images/aadhaar_enrolment_correction_form_version_2.1.pdf"
     },
     {
       id: "step_3",
       title: "Visit Center with Documents",
       description: "Visit the center, submit the form with Proof of Identity (PoI) and Proof of Address (PoA). Provide biometrics.",
-      status: "pending",
+      governmentDepartment: "UIDAI",
       agency: "UIDAI",
-      estimatedTime: "1-2 hours",
+      estimatedFee: "Free for new enrollment",
       cost: "Free for new enrollment",
-      requiredDocuments: ["Proof of Identity (e.g., PAN, Passport)", "Proof of Address (e.g., Utility Bill, Passport)"],
-      tips: ["Take original documents; they will be scanned and returned.", "Keep the acknowledgment slip safe to track status."],
-      links: [],
-      templates: []
+      estimatedDays: "1-2 hours",
+      estimatedTime: "1-2 hours",
+      canBeDoneOnline: false,
+      whyThisStepIsRequired: "Biometrics (fingerprints, iris, facial photograph) are collected in person.",
+      legalJargonSimplified: "Physical verification ensures one unique Aadhaar per individual.",
+      prerequisites: ["Filled enrollment form", "Original ID documents"],
+      requiredDocuments: ["Proof of Identity (PoI)", "Proof of Address (PoA)"],
+      subTasks: [
+        { title: "Submit documents to operator", isDocumentDraftable: false },
+        { title: "Complete fingerprint and iris scan", isDocumentDraftable: false },
+        { title: "Collect acknowledgment slip with Enrollment ID (EID)", isDocumentDraftable: false }
+      ],
+      tips: "Take original documents; they will be scanned and returned. Keep the acknowledgment slip safe.",
+      commonMistakes: ["Losing the enrollment acknowledgment slip before receiving card."],
+      officialUrl: "https://myaadhaar.uidai.gov.in/"
     }
   ]
 };
 
 const mockPANWorkflow = {
+  goal: "Apply for a New PAN Card",
   title: "Apply for a New PAN Card",
-  description: "Step-by-step guide to applying for a PAN card online (Form 49A).",
+  summary: "Step-by-step guide to applying for a PAN card online (Form 49A).",
+  totalEstimatedTime: "3-5 days",
+  totalEstimatedCost: "Rs. 107",
   steps: [
     {
       id: "step_1",
       title: "Submit Online Application",
       description: "Fill Form 49A on the NSDL or UTIITSL portal.",
-      status: "pending",
+      governmentDepartment: "Income Tax Department / NSDL",
       agency: "Income Tax Department / NSDL",
+      estimatedFee: "Rs. 107",
+      cost: "Rs. 107",
+      estimatedDays: "30 mins",
       estimatedTime: "30 mins",
-      cost: "Rs. 107 (approx)",
+      canBeDoneOnline: true,
+      whyThisStepIsRequired: "Form 49A is the statutory application form for allotment of Permanent Account Number.",
+      legalJargonSimplified: "Submit your personal details for tax identification.",
+      prerequisites: ["Aadhaar Card with linked mobile"],
       requiredDocuments: ["Aadhaar Card (for e-KYC)"],
-      tips: ["Using Aadhaar e-KYC makes the process completely paperless and faster."],
-      links: [{ text: "NSDL PAN Portal", url: "https://www.onlineservices.nsdl.com/paam/endUserRegisterContact.html" }],
-      templates: []
+      subTasks: [
+        { title: "Select Form 49A on NSDL Portal", isDocumentDraftable: false },
+        { title: "Enter Aadhaar Number and personal details", isDocumentDraftable: false },
+        { title: "Draft PAN Application Declaration", isDocumentDraftable: true }
+      ],
+      tips: "Using Aadhaar e-KYC makes the process completely paperless and faster.",
+      commonMistakes: ["Name mismatch between Aadhaar and PAN application."],
+      officialUrl: "https://www.onlineservices.nsdl.com/paam/endUserRegisterContact.html"
     },
     {
       id: "step_2",
       title: "Payment and Authentication",
       description: "Pay the fee online and authenticate using Aadhaar OTP.",
-      status: "pending",
+      governmentDepartment: "NSDL",
       agency: "NSDL",
-      estimatedTime: "10 mins",
+      estimatedFee: "Included in Step 1",
       cost: "Included in Step 1",
+      estimatedDays: "10 mins",
+      estimatedTime: "10 mins",
+      canBeDoneOnline: true,
+      whyThisStepIsRequired: "Online payment processes application and e-KYC authenticates identity digitally.",
+      legalJargonSimplified: "Pay processing fee and verify with mobile OTP.",
+      prerequisites: ["Active mobile number linked to Aadhaar"],
       requiredDocuments: [],
-      tips: ["Ensure your Aadhaar is linked to your active mobile number to receive the OTP."],
-      links: [],
-      templates: []
+      subTasks: [
+        { title: "Complete debit/credit card or UPI payment", isDocumentDraftable: false },
+        { title: "Submit Aadhaar OTP", isDocumentDraftable: false }
+      ],
+      tips: "Ensure your Aadhaar is linked to your active mobile number to receive the OTP.",
+      commonMistakes: ["Closing tab before payment confirmation is displayed."],
+      officialUrl: "https://www.onlineservices.nsdl.com/"
     },
     {
       id: "step_3",
       title: "Receive e-PAN and Physical PAN",
       description: "e-PAN will be emailed in a few days. Physical card will be dispatched by post.",
-      status: "pending",
+      governmentDepartment: "Income Tax Department",
       agency: "Income Tax Department",
-      estimatedTime: "1-2 weeks",
+      estimatedFee: "Free",
       cost: "Free",
+      estimatedDays: "2-5 days",
+      estimatedTime: "2-5 days",
+      canBeDoneOnline: true,
+      whyThisStepIsRequired: "Final issuance of Permanent Account Number.",
+      legalJargonSimplified: "Get your digital PAN instantly via email and physical card by mail.",
+      prerequisites: ["Successful e-KYC and Payment"],
       requiredDocuments: [],
-      tips: ["You can use the e-PAN immediately for all legal purposes."],
-      links: [],
-      templates: []
+      subTasks: [
+        { title: "Download PDF e-PAN from email", isDocumentDraftable: false }
+      ],
+      tips: "You can use the e-PAN immediately for all legal purposes.",
+      commonMistakes: ["Incorrect communication address for physical card delivery."],
+      officialUrl: "https://eportal.incometax.gov.in/"
     }
   ]
 };
 
 const mockDLWorkflow = {
+  goal: "Apply for a Driving Licence",
   title: "Apply for a Driving Licence",
-  description: "Step-by-step guide to applying for a Driving Licence in India via Parivahan Sarathi.",
+  summary: "Step-by-step guide to applying for a Driving Licence in India via Parivahan Sarathi.",
+  totalEstimatedTime: "1-2 months",
+  totalEstimatedCost: "Rs. 400",
   steps: [
     {
       id: "step_1",
       title: "Apply for Learner's Licence (LL)",
       description: "Submit LL application online and take the computer-based test.",
-      status: "pending",
+      governmentDepartment: "RTO / Parivahan",
       agency: "RTO / Parivahan",
+      estimatedFee: "Rs. 200",
+      cost: "Rs. 200",
+      estimatedDays: "1 week",
       estimatedTime: "1 week",
-      cost: "Rs. 200 (approx)",
-      requiredDocuments: ["Age Proof", "Address Proof", "Passport Size Photos"],
-      tips: ["Aadhaar authentication lets you take the LL test from home in some states."],
-      links: [{ text: "Parivahan Sarathi", url: "https://sarathi.parivahan.gov.in/" }],
-      templates: []
+      canBeDoneOnline: true,
+      whyThisStepIsRequired: "A Learner's Licence is mandatory before applying for a permanent driving licence.",
+      legalJargonSimplified: "Get a temporary permit to learn driving on public roads.",
+      prerequisites: ["Age Proof (18+ for gear vehicle)", "Address Proof"],
+      requiredDocuments: ["Age Proof (Aadhaar / Birth Cert)", "Address Proof", "Passport Size Photos"],
+      subTasks: [
+        { title: "Fill LL application on Parivahan Sarathi", isDocumentDraftable: false },
+        { title: "Draft Medical Fitness Certificate Form 1-A", isDocumentDraftable: true },
+        { title: "Take online stall test", isDocumentDraftable: false }
+      ],
+      tips: "Aadhaar authentication lets you take the LL test from home in some states.",
+      commonMistakes: ["Failing to review traffic signs before taking the online test."],
+      officialUrl: "https://sarathi.parivahan.gov.in/"
     },
     {
       id: "step_2",
       title: "Apply for Permanent DL",
       description: "After 30 days of getting LL, apply for permanent DL.",
-      status: "pending",
+      governmentDepartment: "RTO",
       agency: "RTO",
-      estimatedTime: "30-180 days",
-      cost: "Rs. 200 (approx)",
-      requiredDocuments: ["Learner's Licence"],
-      tips: ["You must apply within 6 months of LL issuance."],
-      links: [],
-      templates: []
+      estimatedFee: "Rs. 200",
+      cost: "Rs. 200",
+      estimatedDays: "30 days wait",
+      estimatedTime: "30 days wait",
+      canBeDoneOnline: true,
+      whyThisStepIsRequired: "Indian Motor Vehicles Act mandates a 30-day learning period with LL before permanent DL test.",
+      legalJargonSimplified: "Wait 30 days while practicing driving.",
+      prerequisites: ["Valid Learner's Licence"],
+      requiredDocuments: ["Learner's Licence Number"],
+      subTasks: [
+        { title: "Book slot for practical driving test", isDocumentDraftable: false }
+      ],
+      tips: "You must apply within 6 months of LL issuance.",
+      commonMistakes: ["Waiting longer than 6 months (LL expires after 180 days)."],
+      officialUrl: "https://sarathi.parivahan.gov.in/"
     },
     {
       id: "step_3",
       title: "Take Driving Test",
       description: "Visit the RTO with your vehicle for the practical driving test.",
-      status: "pending",
+      governmentDepartment: "RTO",
       agency: "RTO",
-      estimatedTime: "1 day",
+      estimatedFee: "Free",
       cost: "Free",
-      requiredDocuments: ["Vehicle Documents (RC, Insurance, PUC)"],
-      tips: ["Ensure the vehicle used for the test is of the same class you applied for."],
-      links: [],
-      templates: []
+      estimatedDays: "1 day",
+      estimatedTime: "1 day",
+      canBeDoneOnline: false,
+      whyThisStepIsRequired: "Evaluation of vehicle control and compliance with traffic rules.",
+      legalJargonSimplified: "Demonstrate your driving skills to the motor vehicle inspector.",
+      prerequisites: ["Slot confirmation", "Vehicle with valid papers and 'L' board"],
+      requiredDocuments: ["Vehicle Documents (RC, Insurance, PUC)", "Original Learner's Licence"],
+      subTasks: [
+        { title: "Drive on track as instructed by inspector", isDocumentDraftable: false }
+      ],
+      tips: "Ensure the vehicle used for the test is of the same class you applied for.",
+      commonMistakes: ["Not putting on seatbelt/helmet before starting vehicle."],
+      officialUrl: "https://parivahan.gov.in/"
     }
   ]
 };
 
 function getMockQuestions(goal) {
-  const goalLower = goal.toLowerCase();
+  const goalLower = (goal || '').toLowerCase();
   if (goalLower.includes('aadhaar')) {
     return [
       ...defaultQuestions,
@@ -197,41 +296,62 @@ function getMockQuestions(goal) {
 }
 
 function getMockWorkflow(goal, answers) {
-  const goalLower = goal.toLowerCase();
+  const goalLower = (goal || '').toLowerCase();
   if (goalLower.includes('aadhaar')) return mockAadhaarWorkflow;
   if (goalLower.includes('pan')) return mockPANWorkflow;
   if (goalLower.includes('driving') || goalLower.includes('licence') || goalLower.includes('license')) return mockDLWorkflow;
   
-  // Generic fallback workflow
   return {
-    title: "Guide: " + goal,
-    description: "Based on your inputs, here is a general workflow for your request.",
+    goal: goal || "Civic Process",
+    title: "Guide: " + (goal || "Civic Process"),
+    summary: "Based on your inputs, here is a general workflow for your request.",
+    totalEstimatedTime: "1-2 weeks",
+    totalEstimatedCost: "Varies",
     steps: [
       {
         id: "step_1",
         title: "Gather Initial Documents",
         description: "Collect your basic identity and address proofs.",
-        status: "pending",
+        governmentDepartment: "Relevant Authority",
         agency: "Relevant Authority",
+        estimatedFee: "Free",
+        cost: "Free",
+        estimatedDays: "1 day",
         estimatedTime: "1 day",
-        cost: "Varies",
+        canBeDoneOnline: true,
+        whyThisStepIsRequired: "Establishing valid proof of identity and address is mandatory.",
+        legalJargonSimplified: "Collect your basic official ID proofs.",
+        prerequisites: [],
         requiredDocuments: ["Identity Proof", "Address Proof"],
-        tips: ["Always carry originals along with self-attested copies."],
-        links: [],
-        templates: [{ type: "Self-Declaration", name: "Generic Affidavit" }]
+        subTasks: [
+          { title: "Prepare self-attested copies", isDocumentDraftable: false },
+          { title: "Draft Self-Declaration Affidavit", isDocumentDraftable: true }
+        ],
+        tips: "Always carry originals along with self-attested copies.",
+        commonMistakes: ["Submitting expired documents."],
+        officialUrl: ""
       },
       {
         id: "step_2",
         title: "Submit Application",
         description: "Submit the relevant form either online or at the local office.",
-        status: "pending",
+        governmentDepartment: "Relevant Authority",
         agency: "Relevant Authority",
-        estimatedTime: "1-2 weeks",
+        estimatedFee: "Applicable fees",
         cost: "Applicable fees",
-        requiredDocuments: [],
-        tips: ["Ask for a receipt or tracking number."],
-        links: [],
-        templates: []
+        estimatedDays: "1-2 weeks",
+        estimatedTime: "1-2 weeks",
+        canBeDoneOnline: true,
+        whyThisStepIsRequired: "Official submission for verification and processing.",
+        legalJargonSimplified: "Submit form and receive tracking acknowledgment.",
+        prerequisites: ["Initial Documents"],
+        requiredDocuments: ["Completed Application Form"],
+        subTasks: [
+          { title: "Submit application form online or offline", isDocumentDraftable: false }
+        ],
+        tips: "Ask for a receipt or tracking number.",
+        commonMistakes: ["Not retaining the tracking receipt."],
+        officialUrl: ""
       }
     ]
   };

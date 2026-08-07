@@ -1,19 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const groqService = require('../services/groqService');
+const mockWorkflows = require('../data/mockWorkflows');
 
 // POST /api/generate-questions
 router.post('/generate-questions', async (req, res) => {
   try {
     const { goal } = req.body;
-    if (!goal) {
-      return res.status(400).json({ success: false, message: 'Goal is required' });
-    }
-    const questions = await groqService.generateQuestions(goal);
-    res.json({ success: true, questions });
+    const result = await groqService.generateIntakeQuestions(goal);
+    res.json(result);
   } catch (error) {
-    console.error('Error in /generate-questions:', error);
-    res.status(500).json({ success: false, message: 'Failed to generate questions' });
+    console.error('Error generating questions:', error);
+    res.status(500).json({ error: 'Failed to generate questions' });
   }
 });
 
@@ -21,14 +19,14 @@ router.post('/generate-questions', async (req, res) => {
 router.post('/generate-workflow', async (req, res) => {
   try {
     const { goal, answers } = req.body;
-    if (!goal || !answers) {
-      return res.status(400).json({ success: false, message: 'Goal and answers are required' });
-    }
-    const workflow = await groqService.generateWorkflow(goal, answers);
-    res.json({ success: true, workflow });
+    const result = await groqService.generateWorkflow(goal, answers);
+    res.json(result);
   } catch (error) {
-    console.error('Error in /generate-workflow:', error);
-    res.status(500).json({ success: false, message: 'Failed to generate workflow' });
+    console.error('Error generating workflow. Falling back to mock data:', error);
+    // CRITICAL FALLBACK: return a static JSON object from local mockWorkflows
+    // N.B: Since mockWorkflows exports a getMockWorkflow function that returns an object from its static arrays
+    const fallback = mockWorkflows.getMockWorkflow(req.body.goal, req.body.answers);
+    res.json(fallback);
   }
 });
 
@@ -36,14 +34,11 @@ router.post('/generate-workflow', async (req, res) => {
 router.post('/ask-helper', async (req, res) => {
   try {
     const { question, context } = req.body;
-    if (!question) {
-      return res.status(400).json({ success: false, message: 'Question is required' });
-    }
     const answer = await groqService.askHelper(question, context);
-    res.json({ success: true, answer });
+    res.json({ answer });
   } catch (error) {
-    console.error('Error in /ask-helper:', error);
-    res.status(500).json({ success: false, message: 'Failed to ask helper' });
+    console.error('Error asking helper:', error);
+    res.status(500).json({ error: 'Failed to ask helper' });
   }
 });
 
@@ -51,14 +46,11 @@ router.post('/ask-helper', async (req, res) => {
 router.post('/draft-document', async (req, res) => {
   try {
     const { templateType, intakeAnswers, goal } = req.body;
-    if (!templateType) {
-      return res.status(400).json({ success: false, message: 'Template type is required' });
-    }
-    const draft = await groqService.draftDocument(templateType, intakeAnswers, goal);
-    res.json({ success: true, draft });
+    const document = await groqService.draftDocument(templateType, intakeAnswers, goal);
+    res.json({ document });
   } catch (error) {
-    console.error('Error in /draft-document:', error);
-    res.status(500).json({ success: false, message: 'Failed to draft document' });
+    console.error('Error drafting document:', error);
+    res.status(500).json({ error: 'Failed to draft document' });
   }
 });
 
