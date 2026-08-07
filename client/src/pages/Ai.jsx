@@ -47,11 +47,10 @@ export default function Ai() {
       }
 
       const response = await askHelper(text, context);
-      const answerText = typeof response === 'string' ? response : (response?.answer || 'No response received');
       
       const botMsg = {
         id: (Date.now() + 1).toString(),
-        text: answerText,
+        text: response.answer || response,
         isUser: false,
         timestamp: new Date().toISOString()
       };

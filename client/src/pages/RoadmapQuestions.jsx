@@ -165,7 +165,7 @@ export default function RoadmapQuestions() {
                 </option>
               ))}
             </select>
-          ) : (currentQuestion.options && currentQuestion.options.length > 0) || ['single-choice', 'multi-choice', 'radio'].includes(currentQuestion.type) ? (
+          ) : (currentQuestion.type === 'radio' || currentQuestion.type === 'single-choice' || currentQuestion.type === 'multi-choice') ? (
             <div className="radio-group">
               {(currentQuestion.options || []).map((opt) => {
                 const isSelected = currentValue === opt;
