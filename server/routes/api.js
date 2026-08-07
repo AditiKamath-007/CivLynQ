@@ -11,10 +11,11 @@ router.post('/generate-questions', verifyToken, async (req, res) => {
   try {
     const { goal } = req.body;
     const result = await groqService.generateIntakeQuestions(goal);
-    res.json(result);
+    // client expects { success: true, questions: [...] }
+    res.json({ success: true, questions: result.questions });
   } catch (error) {
     console.error('Error generating questions:', error);
-    res.status(500).json({ error: 'Failed to generate questions' });
+    res.status(500).json({ success: false, message: 'Failed to generate questions' });
   }
 });
 
@@ -23,12 +24,13 @@ router.post('/generate-workflow', verifyToken, async (req, res) => {
   try {
     const { goal, answers } = req.body;
     const result = await groqService.generateWorkflow(goal, answers);
-    res.json(result);
+    // client expects { success: true, workflow: {...} }
+    res.json({ success: true, workflow: result });
   } catch (error) {
     console.error('Error generating workflow. Falling back to mock data:', error);
     // CRITICAL FALLBACK: return a static JSON object from local mockWorkflows
     const fallback = mockWorkflows.getMockWorkflow(req.body.goal, req.body.answers);
-    res.json(fallback);
+    res.json({ success: true, workflow: fallback });
   }
 });
 
@@ -37,10 +39,11 @@ router.post('/ask-helper', verifyToken, async (req, res) => {
   try {
     const { question, context } = req.body;
     const answer = await groqService.askHelper(question, context);
-    res.json({ answer });
+    // client expects { success: true, answer: "..." }
+    res.json({ success: true, answer });
   } catch (error) {
     console.error('Error asking helper:', error);
-    res.status(500).json({ error: 'Failed to ask helper' });
+    res.status(500).json({ success: false, message: 'Failed to ask helper' });
   }
 });
 
@@ -49,10 +52,11 @@ router.post('/draft-document', verifyToken, async (req, res) => {
   try {
     const { templateType, intakeAnswers, goal } = req.body;
     const draft = await groqService.draftDocument(templateType, intakeAnswers, goal);
+    // client expects { success: true, draft: "..." }
     res.json({ success: true, draft });
   } catch (error) {
     console.error('Error drafting document:', error);
-    res.status(500).json({ success: false, error: 'Failed to draft document' });
+    res.status(500).json({ success: false, message: 'Failed to draft document' });
   }
 });
 

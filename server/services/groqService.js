@@ -5,10 +5,10 @@ const groq = process.env.GROQ_API_KEY ? new Groq({ apiKey: process.env.GROQ_API_
 async function generateIntakeQuestions(goal) {
   if (!groq) throw new Error('Groq API Key missing');
 
-  const prompt = `You are a legal advisor.
+  const prompt = `You are an expert legal advisor for Indian government and civic processes.
 The user's goal is: "${goal}".
 Generate ONLY a JSON object with a "questions" array.
-Constraint: Max 4 questions. Ask only about eligibility, state, business type, etc.
+Constraint: Max 4 questions. The questions MUST be highly relevant to this specific Indian civic procedure. For example, ask about age, resident state, or specific document availability if applicable. Do NOT ask irrelevant questions like US citizenship or business type unless the goal specifically requires it.
 Each question MUST follow the exact format:
 {
   "id": "string",
@@ -30,10 +30,12 @@ Each question MUST follow the exact format:
 async function generateWorkflow(goal, answers) {
   if (!groq) throw new Error('Groq API Key missing');
 
-  const prompt = `You are a legal advisor generating a highly structured roadmap.
+  const prompt = `You are an expert legal advisor for Indian government and civic processes generating a highly structured roadmap.
 Goal: "${goal}".
-Intake Answers: ${JSON.stringify(answers)}.
-Strict Rules: Never invent laws/documents. Use only statutory fees.
+User's specific situation based on Intake Answers: ${JSON.stringify(answers)}.
+
+CRITICAL INSTRUCTION: You MUST heavily personalize the roadmap based on the User's Intake Answers. Do not provide a generic roadmap. Adapt the steps, prerequisites, required documents, and tips to directly address the exact situation revealed in their answers.
+Strict Rules: Never invent laws/documents. Use only statutory fees applicable in India.
 Return ONLY a JSON object with the following schema:
 {
   "goal": "string",
@@ -82,7 +84,7 @@ Return ONLY a JSON object with the following schema:
 async function askHelper(question, context) {
   if (!groq) throw new Error('Groq API Key missing');
 
-  const prompt = `You are a contextual chatbot acting as a legal assistant.
+  const prompt = `You are a contextual chatbot acting as a legal assistant for Indian civic processes.
 Context (the current step the user is looking at): ${JSON.stringify(context)}
 User Question: "${question}"
 
@@ -99,7 +101,7 @@ Answer practically and concisely (under 150 words) without inventing legal rules
 async function draftDocument(templateType, intakeAnswers, goal) {
   if (!groq) throw new Error('Groq API Key missing');
 
-  const prompt = `You are a legal assistant. Draft a formal government letter/declaration.
+  const prompt = `You are a legal assistant for Indian civic processes. Draft a formal government letter/declaration.
 Template Type: "${templateType}"
 Goal: "${goal}"
 User Details: ${JSON.stringify(intakeAnswers)}
