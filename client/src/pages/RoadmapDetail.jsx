@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Clock, ArrowLeft, Check, ExternalLink, Shield, X, CheckCircle2, ChevronLeft, ChevronRight, Sparkles, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toArray } from '../utils/toArray';
-import { draftDocument, checkConsent, saveConsent, saveUserDraft } from '../services/api';
+import { draftDocument, checkConsent, saveConsent, saveUserDraft, getDocumentGuide } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 export default function RoadmapDetail() {
@@ -23,6 +23,8 @@ export default function RoadmapDetail() {
   const [exitModalOpen, setExitModalOpen] = useState(false);
   const [completionModalOpen, setCompletionModalOpen] = useState(false);
   const [openDoc, setOpenDoc] = useState(null); // Document info modal state
+  const [docGuide, setDocGuide] = useState(null);
+  const [docGuideLoading, setDocGuideLoading] = useState(false);
 
   // AI Drafter consent state
   const [showConsentModal, setShowConsentModal] = useState(false);
@@ -127,6 +129,29 @@ export default function RoadmapDetail() {
     setCompletionModalOpen(true);
   };
 
+  const handleOpenDoc = async (docName) => {
+    if (!docName) {
+      setOpenDoc(null);
+      return;
+    }
+    setOpenDoc(docName);
+    setDocGuide(null);
+    setDocGuideLoading(true);
+    try {
+      const result = await getDocumentGuide(docName);
+      if (result && result.success && result.guide) {
+        setDocGuide(result.guide);
+      } else {
+        setDocGuide(null);
+      }
+    } catch (e) {
+      console.error(e);
+      setDocGuide(null);
+    } finally {
+      setDocGuideLoading(false);
+    }
+  };
+
   if (loading) {
     return <div className="bg-brand-bone min-h-screen flex items-center justify-center font-sans text-brand-ink-mute">Loading...</div>;
   }
@@ -157,7 +182,7 @@ export default function RoadmapDetail() {
   const subTasks = toArray(currentStep.subTasks || currentStep.checklist);
   const time = currentStep.estimatedDays || currentStep.estimatedTime || currentStep.duration;
   const mistakes = toArray(currentStep.mistakes);
-  const officialUrl = currentStep.officialLink || currentStep.link || currentStep.url;
+  const officialUrl = currentStep.officialUrl || currentStep.officialLink || currentStep.link || currentStep.url;
 
   // Determine completion logic for current step
   let hasRequiredItems = false;
@@ -361,7 +386,7 @@ export default function RoadmapDetail() {
                           <div className="flex items-center gap-3 ml-8 sm:ml-0">
                             {/* NEW FEATURE: "Get this document" button */}
                             <button 
-                              onClick={(e) => { e.stopPropagation(); setOpenDoc(docStr); }}
+                              onClick={(e) => { e.stopPropagation(); handleOpenDoc(docStr); }}
                               className="inline-flex items-center gap-1.5 text-sm text-brand-orange hover:text-brand-orange-dk font-medium font-sans transition cursor-pointer shrink-0"
                             >
                               <ExternalLink size={14} /> How to get this
@@ -393,17 +418,33 @@ export default function RoadmapDetail() {
                 </div>
               )}
 
-              {officialUrl && (
-                <div className="mt-6 mb-2">
-                  <button 
-                    className="flex items-center gap-2 px-5 py-2.5 bg-brand-orange-lt text-brand-orange hover:bg-brand-orange hover:text-white rounded-pill font-medium text-sm transition-colors shadow-sm"
-                    onClick={() => {
-                      const absoluteUrl = officialUrl.startsWith('http') ? officialUrl : `https://${officialUrl}`;
-                      window.open(absoluteUrl, '_blank');
-                    }}
-                  >
-                    <ExternalLink size={16} /> Official Link
-                  </button>
+              {(officialUrl || (currentStep.links && currentStep.links.length > 0)) && (
+                <div className="mt-6 mb-2 flex flex-wrap gap-3">
+                  {officialUrl && (
+                    <button 
+                      className="flex items-center gap-2 px-5 py-2.5 bg-brand-orange-lt text-brand-orange hover:bg-brand-orange hover:text-white rounded-pill font-medium text-sm transition-colors shadow-sm"
+                      onClick={() => {
+                        const absoluteUrl = officialUrl.startsWith('http') ? officialUrl : `https://${officialUrl}`;
+                        window.open(absoluteUrl, '_blank');
+                      }}
+                    >
+                      <ExternalLink size={16} /> Official Link
+                    </button>
+                  )}
+                  {currentStep.links && currentStep.links.map((linkObj, idx) => (
+                    <button 
+                      key={`link-${idx}`}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-brand-orange-lt text-brand-orange hover:bg-brand-orange hover:text-white rounded-pill font-medium text-sm transition-colors shadow-sm"
+                      onClick={() => {
+                        const url = linkObj.url || linkObj.link || '';
+                        if (!url) return;
+                        const absoluteUrl = url.startsWith('http') ? url : `https://${url}`;
+                        window.open(absoluteUrl, '_blank');
+                      }}
+                    >
+                      <ExternalLink size={16} /> {linkObj.text || 'Official Link'}
+                    </button>
+                  ))}
                 </div>
               )}
 
@@ -420,19 +461,26 @@ export default function RoadmapDetail() {
                 ) : <div />}
 
                 {currentStepIdx < totalSteps - 1 ? (
-                  isStepComplete ? (
+                  completedSteps[currentStepIdx] ? (
                     <button
-                      onClick={markStepCompleteAndContinue}
-                      className="bg-brand-orange hover:bg-brand-orange-dk text-white font-display font-semibold px-6 h-11 rounded-pill shadow-card flex items-center gap-2 transition"
+                      onClick={() => setCurrentStepIdx(prev => prev + 1)}
+                      className="bg-brand-cream hover:bg-brand-cream-dk text-brand-ink font-display font-semibold px-6 h-11 rounded-pill flex items-center gap-2 transition"
                     >
-                      <Check size={18} /> Mark as Done & Continue
+                      Next <ChevronRight size={18} />
                     </button>
-                  ) : (
+                  ) : (hasRequiredItems && !allRequiredChecked) ? (
                     <button
                       disabled
                       className="bg-brand-orange hover:bg-brand-orange-dk text-white font-display font-semibold px-6 h-11 rounded-pill shadow-card flex items-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-brand-cream-dk"
                     >
                       Next <ChevronRight size={18} />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={markStepCompleteAndContinue}
+                      className="bg-brand-orange hover:bg-brand-orange-dk text-white font-display font-semibold px-6 h-11 rounded-pill shadow-card flex items-center gap-2 transition"
+                    >
+                      <Check size={18} /> Mark as Done & Continue
                     </button>
                   )
                 ) : (
@@ -531,22 +579,41 @@ export default function RoadmapDetail() {
               
               {/* 🤖 AI INTEGRATION POINT 4: Document guides */}
               <div className="space-y-4 mb-6 mt-6">
-                <div className="flex items-start gap-3">
-                  <div className="w-7 h-7 rounded-full bg-brand-orange-lt text-brand-orange font-display font-semibold flex items-center justify-center text-xs flex-shrink-0">1</div>
-                  <p className="text-sm text-brand-ink font-sans leading-relaxed mt-1">Visit your nearest government office or the official online portal for {openDoc}.</p>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-7 h-7 rounded-full bg-brand-orange-lt text-brand-orange font-display font-semibold flex items-center justify-center text-xs flex-shrink-0">2</div>
-                  <p className="text-sm text-brand-ink font-sans leading-relaxed mt-1">Fill out the application form and submit the required supporting documents.</p>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-7 h-7 rounded-full bg-brand-orange-lt text-brand-orange font-display font-semibold flex items-center justify-center text-xs flex-shrink-0">3</div>
-                  <p className="text-sm text-brand-ink font-sans leading-relaxed mt-1">Pay any applicable fees and collect your {openDoc} (usually issued within 7-15 working days).</p>
-                </div>
+                {docGuideLoading ? (
+                  <div className="flex flex-col items-center justify-center py-6 gap-3">
+                    <div className="w-8 h-8 rounded-full border-2 border-brand-orange border-t-transparent animate-spin"></div>
+                    <p className="text-sm text-brand-ink-mute">Getting instructions for {openDoc}...</p>
+                  </div>
+                ) : docGuide ? (
+                  <>
+                    {docGuide.steps && docGuide.steps.map((step, idx) => (
+                      <div key={idx} className="flex items-start gap-3">
+                        <div className="w-7 h-7 rounded-full bg-brand-orange-lt text-brand-orange font-display font-semibold flex items-center justify-center text-xs flex-shrink-0">{idx + 1}</div>
+                        <p className="text-sm text-brand-ink font-sans leading-relaxed mt-1">{step}</p>
+                      </div>
+                    ))}
+                    {docGuide.link && (
+                      <div className="mt-6 pt-2 border-t border-brand-cream flex justify-center">
+                        <button 
+                          className="flex items-center gap-2 px-6 py-3 bg-brand-orange-lt text-brand-orange hover:bg-brand-orange hover:text-white rounded-pill font-medium text-sm transition-colors shadow-sm"
+                          onClick={() => {
+                            const url = docGuide.link;
+                            const absoluteUrl = url.startsWith('http') ? url : `https://${url}`;
+                            window.open(absoluteUrl, '_blank');
+                          }}
+                        >
+                          <ExternalLink size={18} /> Apply / Renew Here
+                        </button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-sm text-brand-ink-mute text-center py-4">Instructions not available right now. Please check the official government portal.</p>
+                )}
               </div>
 
               <button 
-                onClick={() => setOpenDoc(null)}
+                onClick={() => handleOpenDoc(null)}
                 className="w-full h-11 bg-brand-orange hover:bg-brand-orange-dk text-white font-display font-semibold rounded-pill shadow-card flex items-center justify-center transition"
               >
                 Got it

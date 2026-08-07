@@ -60,6 +60,18 @@ router.post('/draft-document', async (req, res) => {
   }
 });
 
+// POST /api/document-guide
+router.post('/document-guide', async (req, res) => {
+  try {
+    const { documentName } = req.body;
+    const guide = await groqService.getDocumentGuide(documentName);
+    res.json({ success: true, guide });
+  } catch (error) {
+    console.error('Error getting document guide:', error);
+    res.status(500).json({ success: false, message: 'Failed to get document guide' });
+  }
+});
+
 // User Database Routes
 // POST /api/user/consent
 router.post('/user/consent', verifyToken, async (req, res) => {

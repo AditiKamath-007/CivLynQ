@@ -85,7 +85,7 @@ The "workflow" should have:
   - "requiredDocuments": array of strings (pulled from masterRequiredDocuments, only for this specific step)
   - "prerequisites": array of strings (actions, not files)
   - "tips": array of strings (helpful advice)
-  - "links": array of objects with "text" and "url". CRITICAL: These MUST be specific, actual, working official Indian government URLs (e.g. https://sarathi.parivahan.gov.in). Do NOT provide generic links.
+  - "links": array of objects with "text" and "url". CRITICAL RULE: For any step requiring an online action, you MUST provide the DEEP, DIRECT ACTION LINK to the exact application form or login portal (e.g., "https://foscos.fssai.gov.in" for FSSAI registration, NOT a generic informational page about the license). NEVER provide a vague website just to learn about the process. If a step involves applying/registering, give the exact link to start that action.
   - "templates": array of objects with "type" (e.g., "Affidavit", "Application") and "name"
 
 Return ONLY valid JSON.`;
@@ -170,9 +170,44 @@ Return a JSON object with a single key "draft" containing the string text of the
   }
 }
 
+async function getDocumentGuide(documentName) {
+  try {
+    const client = getGroqClient();
+    if (!client) throw new Error('Groq not initialized');
+
+    const prompt = `You are a helpful assistant for Indian civic processes.
+The user wants to know how to obtain or renew the following document: "${documentName}"
+
+Provide a short, simple guide.
+CRITICAL: Include the exact, direct official Indian government portal URL where the user can apply for or renew this document online. If it cannot be done online, provide the official informational link or a relevant portal.
+
+Return a JSON object with EXACTLY this structure:
+{
+  "steps": [
+    "Step 1: ...",
+    "Step 2: ..."
+  ],
+  "link": "https://..."
+}`;
+
+    const completion = await client.chat.completions.create({
+      messages: [{ role: 'user', content: prompt }],
+      model: MODEL,
+      response_format: { type: 'json_object' }
+    });
+
+    const result = JSON.parse(completion.choices[0].message.content);
+    return result;
+  } catch (error) {
+    console.warn('Falling back to mock document guide');
+    return mockWorkflows.getMockDocumentGuide(documentName);
+  }
+}
+
 module.exports = {
   generateQuestions,
   generateWorkflow,
   askHelper,
-  draftDocument
+  draftDocument,
+  getDocumentGuide
 };

@@ -90,6 +90,13 @@ export async function draftDocument(templateType, intakeAnswers, goal) {
 }
 
 /**
+ * Get dynamic AI guide on how to obtain a document.
+ */
+export async function getDocumentGuide(documentName) {
+  return request('/document-guide', { documentName });
+}
+
+/**
  * Save user consent for AI drafting.
  */
 export async function saveConsent(consented) {

@@ -506,9 +506,21 @@ function getMockDraft(templateType, intakeAnswers, goal) {
   return `# Draft: ${templateType}\n\n**For:** ${goal || 'Government Process'}\n\n---\n\nThis is a mock draft document generated because the Groq API is not configured. When a valid API key is added to \`.env\`, this will generate a properly formatted draft based on your specific details.\n\n**Applicant Details:**\n${intakeAnswers ? Object.entries(intakeAnswers).map(([k, v]) => `- **${k}:** ${v}`).join('\n') : '- No details provided yet'}\n\n---\n\n*This document is auto-generated and should be reviewed before submission.*`;
 }
 
+function getMockDocumentGuide(documentName) {
+  return {
+    steps: [
+      `Visit the official portal or your nearest government office for ${documentName}.`,
+      `Fill out the application form with your details.`,
+      `Submit the form along with required supporting documents and pay any applicable fees.`
+    ],
+    link: "https://www.india.gov.in/"
+  };
+}
+
 module.exports = {
   getMockQuestions,
   getMockWorkflow,
   getMockHelperAnswer,
-  getMockDraft
+  getMockDraft,
+  getMockDocumentGuide
 };
