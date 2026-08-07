@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Pencil, User, FileText, ChevronRight, LogOut, Shield, X, Check } from 'lucide-react';
+import { Pencil, User, FileText, ChevronRight, LogOut, Shield, X, Check, Globe } from 'lucide-react';
 import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage, LANGUAGES } from '../context/LanguageContext';
 import { getUserDrafts, checkConsent, saveConsent } from '../services/api';
 
 export default function Profile() {
   const navigate = useNavigate();
   const { currentUser, logout, updateProfile } = useAuth();
+  const { language, setLanguage, currentLanguageName } = useLanguage();
+  
   const [expandedRow, setExpandedRow] = useState(null);
   const [drafts, setDrafts] = useState([]);
   const [loadingDrafts, setLoadingDrafts] = useState(true);
@@ -220,6 +223,39 @@ export default function Profile() {
                   <label className="block text-xs text-brand-ink-mute mb-1">Email</label>
                   <input type="email" readOnly value={currentUser?.email || 'user@civlynq.in'} className="w-full bg-white border border-brand-cream-dk rounded-lg px-3 py-2 text-sm text-brand-ink outline-none" />
                 </div>
+              </div>
+            )}
+          </div>
+
+          {/* Language Preference Row */}
+          <div>
+            <button 
+              className="w-full h-14 flex items-center gap-3 px-5 hover:bg-brand-cream transition cursor-pointer"
+              onClick={() => toggleRow('language')}
+            >
+              <Globe size={20} className="text-brand-green flex-shrink-0" aria-hidden="true" />
+              <div className="flex flex-1 flex-col items-start justify-center">
+                <span className="font-sans text-[15px] font-medium text-brand-ink leading-none">Language</span>
+                <span className="font-sans text-xs text-brand-ink-mute mt-1">{currentLanguageName}</span>
+              </div>
+              <ChevronRight size={20} className={`text-brand-ink-mute transition-transform ${expandedRow === 'language' ? 'rotate-90' : ''}`} aria-hidden="true" />
+            </button>
+            {expandedRow === 'language' && (
+              <div className="px-5 pb-5 pt-2 bg-brand-cream/30 space-y-2 border-t border-brand-cream-dk max-h-64 overflow-y-auto">
+                {LANGUAGES.map(lang => (
+                  <button
+                    key={lang.code}
+                    onClick={() => { setLanguage(lang.code); toggleRow(null); }}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-colors ${
+                      language === lang.code 
+                        ? 'border-brand-orange bg-brand-orange-lt' 
+                        : 'border-brand-cream-dk bg-white hover:border-brand-orange hover:bg-brand-orange-lt'
+                    }`}
+                  >
+                    <span className="font-sans text-[14px] font-medium text-brand-ink">{lang.name}</span>
+                    {language === lang.code && <Check size={16} className="text-brand-orange" />}
+                  </button>
+                ))}
               </div>
             )}
           </div>

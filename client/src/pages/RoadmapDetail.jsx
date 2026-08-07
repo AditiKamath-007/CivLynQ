@@ -156,7 +156,7 @@ export default function RoadmapDetail() {
   const progressPercent = totalSteps > 0 ? (completedCount / totalSteps) * 100 : 0;
 
   const docs = toArray(currentStep.requiredDocuments || currentStep.documents);
-  const subTasks = toArray(currentStep.subTasks || currentStep.checklist);
+  const subTasks = toArray(currentStep.subTasks || currentStep.checklist || currentStep.prerequisites);
   const time = currentStep.estimatedDays || currentStep.estimatedTime || currentStep.duration;
   const mistakes = toArray(currentStep.mistakes);
   const officialUrl = currentStep.officialUrl || currentStep.officialLink || currentStep.link || currentStep.url;

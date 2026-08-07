@@ -35,7 +35,8 @@ async function request(endpoint, body = null, method = 'POST') {
     };
 
     if (body && method !== 'GET') {
-      config.body = JSON.stringify(body);
+      const language = localStorage.getItem('civlynq_language') || 'en';
+      config.body = JSON.stringify({ ...body, language });
     }
 
     const response = await fetch(`${BASE_URL}${endpoint}`, config);

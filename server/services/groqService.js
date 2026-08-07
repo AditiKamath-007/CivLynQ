@@ -17,15 +17,23 @@ function getGroqClient() {
 
 const MODEL = 'llama-3.1-8b-instant';
 
-async function generateQuestions(goal) {
+async function generateQuestions(goal, language = 'en') {
   try {
     const client = getGroqClient();
     if (!client) throw new Error('Groq not initialized');
 
     const prompt = `You are a strict legal and civic expert on Indian government processes. 
 The user's goal is: "${goal}".
+IMPORTANT: You MUST generate your response natively in the following language code: ${language}.
 Generate a JSON object with a single key "questions" containing an array of intake questions to determine their exact situation.
-CRITICAL: Ask ONLY relevant, highly specific questions absolutely necessary to determine their eligibility and path in India. Do NOT ask generic or irrelevant questions.
+
+CRITICAL RULES FOR QUESTIONS:
+1. QUANTITY: You must generate between 1 to 3 questions minimum, and an absolute maximum of 5 to 6 questions.
+2. SPECIFICITY: Keep the questions balanced—neither too highly niche/technical, nor too basic/generic. Ask just enough to cover the essential details needed for personalization of their roadmap.
+3. COMMON SENSE FILTER: Do NOT ask highly intrusive, illogical, or extreme corner-case questions for basic administrative tasks (e.g., do not ask about criminal convictions for a simple Aadhar card update). Assume standard citizen circumstances unless the user's goal explicitly involves those extreme situations.
+4. LOGICAL INDEPENDENCE: Because all questions are asked at the same time, no question should depend on or contradict the answer to a previous question. Ask independent questions.
+5. AGE SIMPLICITY: If age is relevant, do not use arbitrary brackets (e.g., 18-25, 25-35). Just ask if they are a minor (<18) or adult (18+) unless a specific law requires exact age brackets.
+
 Each question should have:
 - "id": string (unique identifier)
 - "question": string (the question text)
@@ -37,7 +45,8 @@ Return ONLY valid JSON.`;
     const completion = await client.chat.completions.create({
       messages: [{ role: 'user', content: prompt }],
       model: MODEL,
-      response_format: { type: 'json_object' }
+      response_format: { type: 'json_object' },
+      temperature: 0
     });
 
     const result = JSON.parse(completion.choices[0].message.content);
@@ -48,7 +57,7 @@ Return ONLY valid JSON.`;
   }
 }
 
-async function generateWorkflow(goal, answers) {
+async function generateWorkflow(goal, answers, language = 'en') {
   try {
     const client = getGroqClient();
     if (!client) throw new Error('Groq not initialized');
@@ -57,6 +66,7 @@ async function generateWorkflow(goal, answers) {
     const prompt = `You are an expert government, legal, and compliance advisor on Indian processes.
 The user's goal is: "${goal}".
 Their specific situation (based on intake answers) is: ${answersText}.
+IMPORTANT: You MUST generate your response natively in the following language code: ${language}.
 
 CRITICAL DOCUMENT RULES (FAILURE IS UNACCEPTABLE):
 1. ZERO HALLUCINATIONS: You must NEVER invent documents. Only list documents that are strictly required by official, real-world procedures.
@@ -93,7 +103,8 @@ Return ONLY valid JSON.`;
     const completion = await client.chat.completions.create({
       messages: [{ role: 'user', content: prompt }],
       model: MODEL,
-      response_format: { type: 'json_object' }
+      response_format: { type: 'json_object' },
+      temperature: 0
     });
 
     const result = JSON.parse(completion.choices[0].message.content);
@@ -104,7 +115,7 @@ Return ONLY valid JSON.`;
   }
 }
 
-async function askHelper(question, context) {
+async function askHelper(question, context, language = 'en') {
   try {
     const client = getGroqClient();
     if (!client) throw new Error('Groq not initialized');
@@ -113,6 +124,7 @@ async function askHelper(question, context) {
     const prompt = `You are LynQbot, a strict and helpful assistant for Indian civic processes.
 The user asked: "${question}"
 Current Context (Roadmap Step): ${contextText}
+IMPORTANT: You MUST generate your response natively in the following language code: ${language}.
 
 CRITICAL RESTRICTIONS:
 1. ONLY answer questions related to the "Current Context" OR general Indian government/civic/bureaucratic processes.
@@ -131,7 +143,8 @@ Return ONLY a valid JSON object matching this exact structure (with the markdown
     const completion = await client.chat.completions.create({
       messages: [{ role: 'user', content: prompt }],
       model: MODEL,
-      response_format: { type: 'json_object' }
+      response_format: { type: 'json_object' },
+      temperature: 0
     });
 
     const result = JSON.parse(completion.choices[0].message.content);
@@ -143,7 +156,7 @@ Return ONLY a valid JSON object matching this exact structure (with the markdown
   }
 }
 
-async function draftDocument(templateType, intakeAnswers, goal) {
+async function draftDocument(templateType, intakeAnswers, goal, language = 'en') {
   try {
     const client = getGroqClient();
     if (!client) throw new Error('Groq not initialized');
@@ -152,6 +165,7 @@ async function draftDocument(templateType, intakeAnswers, goal) {
 Document Type: "${templateType}"
 Process/Goal: "${goal}"
 User Details: ${JSON.stringify(intakeAnswers)}
+IMPORTANT: You MUST generate your response natively in the following language code: ${language}.
 
 Generate a draft document text. 
 Return a JSON object with a single key "draft" containing the string text of the draft. Use markdown for formatting.`;
@@ -159,7 +173,8 @@ Return a JSON object with a single key "draft" containing the string text of the
     const completion = await client.chat.completions.create({
       messages: [{ role: 'user', content: prompt }],
       model: MODEL,
-      response_format: { type: 'json_object' }
+      response_format: { type: 'json_object' },
+      temperature: 0
     });
 
     const result = JSON.parse(completion.choices[0].message.content);
@@ -170,13 +185,14 @@ Return a JSON object with a single key "draft" containing the string text of the
   }
 }
 
-async function getDocumentGuide(documentName) {
+async function getDocumentGuide(documentName, language = 'en') {
   try {
     const client = getGroqClient();
     if (!client) throw new Error('Groq not initialized');
 
     const prompt = `You are a helpful assistant for Indian civic processes.
 The user wants to know how to obtain or renew the following document: "${documentName}"
+IMPORTANT: You MUST generate your response natively in the following language code: ${language}.
 
 Provide a short, simple guide.
 CRITICAL: Include the exact, direct official Indian government portal URL where the user can apply for or renew this document online. If it cannot be done online, provide the official informational link or a relevant portal.
@@ -193,7 +209,8 @@ Return a JSON object with EXACTLY this structure:
     const completion = await client.chat.completions.create({
       messages: [{ role: 'user', content: prompt }],
       model: MODEL,
-      response_format: { type: 'json_object' }
+      response_format: { type: 'json_object' },
+      temperature: 0
     });
 
     const result = JSON.parse(completion.choices[0].message.content);

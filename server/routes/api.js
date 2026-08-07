@@ -9,8 +9,8 @@ const { db } = require('../services/firebaseService');
 // POST /api/generate-questions
 router.post('/generate-questions', async (req, res) => {
   try {
-    const { goal } = req.body;
-    const questions = await groqService.generateQuestions(goal);
+    const { goal, language } = req.body;
+    const questions = await groqService.generateQuestions(goal, language);
     // client expects { success: true, questions: [...] }
     res.json({ success: true, questions });
   } catch (error) {
@@ -22,8 +22,8 @@ router.post('/generate-questions', async (req, res) => {
 // POST /api/generate-workflow
 router.post('/generate-workflow', async (req, res) => {
   try {
-    const { goal, answers } = req.body;
-    const result = await groqService.generateWorkflow(goal, answers);
+    const { goal, answers, language } = req.body;
+    const result = await groqService.generateWorkflow(goal, answers, language);
     // client expects { success: true, workflow: {...} }
     res.json({ success: true, workflow: result });
   } catch (error) {
@@ -37,8 +37,8 @@ router.post('/generate-workflow', async (req, res) => {
 // POST /api/ask-helper
 router.post('/ask-helper', async (req, res) => {
   try {
-    const { question, context } = req.body;
-    const answer = await groqService.askHelper(question, context);
+    const { question, context, language } = req.body;
+    const answer = await groqService.askHelper(question, context, language);
     // client expects { success: true, answer: "..." }
     res.json({ success: true, answer });
   } catch (error) {
@@ -50,8 +50,8 @@ router.post('/ask-helper', async (req, res) => {
 // POST /api/draft-document
 router.post('/draft-document', async (req, res) => {
   try {
-    const { templateType, intakeAnswers, goal } = req.body;
-    const draft = await groqService.draftDocument(templateType, intakeAnswers, goal);
+    const { templateType, intakeAnswers, goal, language } = req.body;
+    const draft = await groqService.draftDocument(templateType, intakeAnswers, goal, language);
     // client expects { success: true, draft: "..." }
     res.json({ success: true, draft });
   } catch (error) {
@@ -63,8 +63,8 @@ router.post('/draft-document', async (req, res) => {
 // POST /api/document-guide
 router.post('/document-guide', async (req, res) => {
   try {
-    const { documentName } = req.body;
-    const guide = await groqService.getDocumentGuide(documentName);
+    const { documentName, language } = req.body;
+    const guide = await groqService.getDocumentGuide(documentName, language);
     res.json({ success: true, guide });
   } catch (error) {
     console.error('Error getting document guide:', error);

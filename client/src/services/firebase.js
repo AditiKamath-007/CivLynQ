@@ -4,10 +4,7 @@ import {
   GoogleAuthProvider, 
   signInWithPopup as fbSignInWithPopup, 
   signOut as fbSignOut, 
-  onAuthStateChanged as fbOnAuthStateChanged,
-  createUserWithEmailAndPassword as fbCreateUser,
-  signInWithEmailAndPassword as fbSignInWithEmail,
-  updateProfile as fbUpdateProfile
+  onAuthStateChanged as fbOnAuthStateChanged 
 } from 'firebase/auth';
 
 let firebaseApp = null;
@@ -26,7 +23,7 @@ const firebaseConfig = {
 };
 
 // Check if we have a valid configuration
-const hasConfig = firebaseConfig.apiKey && firebaseConfig.apiKey !== 'YOUR_API_KEY';
+const hasConfig = firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY";
 
 if (hasConfig) {
   try {
@@ -43,28 +40,15 @@ if (hasConfig) {
   isMock = true;
 }
 
-// --- Mock Firebase implementation ---
-
+// Mock Firebase implementation
 let mockUserListeners = [];
 let currentMockUser = null;
-
-/**
- * Hydrate a stored mock user object so it has a working getIdToken method.
- * JSON.stringify strips functions, so we re-attach it on load.
- */
-function hydrateMockUser(raw) {
-  if (!raw) return null;
-  return {
-    ...raw,
-    getIdToken: async () => 'mock-token-' + (raw.uid || 'testuser'),
-  };
-}
 
 // Initialize mock user from localStorage if exists
 try {
   const storedUser = localStorage.getItem('mock_user');
   if (storedUser) {
-    currentMockUser = hydrateMockUser(JSON.parse(storedUser));
+    currentMockUser = JSON.parse(storedUser);
   }
 } catch (e) {
   console.error('Failed to parse mock user:', e);
@@ -89,61 +73,17 @@ const mockAuth = {
 
 const mockSignInWithPopup = async () => {
   console.log('[Firebase Mock Auth] Simulating Google Login...');
+  // Simulate delay
   await new Promise(resolve => setTimeout(resolve, 800));
   
-  const user = hydrateMockUser({
+  const user = {
     uid: 'testuser',
     displayName: 'CivLynQ Test User',
     email: 'testuser@civlynq.in',
-    photoURL: null,
-  });
+    photoURL: 'https://lh3.googleusercontent.com/a/default-user',
+    getIdToken: async () => 'mock-token-testuser',
+  };
   
-  currentMockUser = user;
-  mockAuth.currentUser = user;
-  localStorage.setItem('mock_user', JSON.stringify(user));
-  triggerMockAuthListeners(user);
-  return { user };
-};
-
-/**
- * Mock email/password sign-in.
- * Accepts any credentials in mock mode — just creates a mock user session.
- */
-const mockSignInWithEmail = async (email, password) => {
-  console.log('[Firebase Mock Auth] Simulating email sign-in for', email);
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  // Derive a display name from the email prefix
-  const displayName = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-
-  const user = hydrateMockUser({
-    uid: 'user-' + email.replace(/[^a-zA-Z0-9]/g, ''),
-    displayName,
-    email,
-    photoURL: null,
-  });
-
-  currentMockUser = user;
-  mockAuth.currentUser = user;
-  localStorage.setItem('mock_user', JSON.stringify(user));
-  triggerMockAuthListeners(user);
-  return { user };
-};
-
-/**
- * Mock email/password sign-up.
- */
-const mockCreateUser = async (email, password, displayName) => {
-  console.log('[Firebase Mock Auth] Simulating account creation for', email);
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  const user = hydrateMockUser({
-    uid: 'user-' + Date.now(),
-    displayName: displayName || email.split('@')[0],
-    email,
-    photoURL: null,
-  });
-
   currentMockUser = user;
   mockAuth.currentUser = user;
   localStorage.setItem('mock_user', JSON.stringify(user));
@@ -159,8 +99,7 @@ const mockSignOut = async () => {
   triggerMockAuthListeners(null);
 };
 
-// --- Export active wrappers ---
-
+// Export active wrappers
 export const auth = isMock ? mockAuth : firebaseAuth;
 export const googleProvider = isMock ? null : googleAuthProvider;
 export const isMockAuth = isMock;
@@ -170,32 +109,6 @@ export const signInWithGoogle = async () => {
     return mockSignInWithPopup();
   } else {
     return fbSignInWithPopup(firebaseAuth, googleAuthProvider);
-  }
-};
-
-/**
- * Sign in with email and password.
- */
-export const signInWithEmail = async (email, password) => {
-  if (isMock) {
-    return mockSignInWithEmail(email, password);
-  } else {
-    return fbSignInWithEmail(firebaseAuth, email, password);
-  }
-};
-
-/**
- * Create a new user with email, password, and display name.
- */
-export const createUser = async (email, password, displayName) => {
-  if (isMock) {
-    return mockCreateUser(email, password, displayName);
-  } else {
-    const result = await fbCreateUser(firebaseAuth, email, password);
-    if (displayName) {
-      await fbUpdateProfile(result.user, { displayName });
-    }
-    return result;
   }
 };
 
@@ -210,7 +123,7 @@ export const logout = async () => {
 export const getIdToken = async (user) => {
   if (!user) return null;
   if (isMock || typeof user.getIdToken !== 'function') {
-    return 'mock-token-' + (user.uid || 'testuser');
+    return 'mock-token-testuser';
   }
   return user.getIdToken();
 };
@@ -220,34 +133,5 @@ export const onAuthStateChanged = (cb) => {
     return mockAuth.onAuthStateChanged(cb);
   } else {
     return fbOnAuthStateChanged(firebaseAuth, cb);
-  }
-};
-
-export const updateUserProfile = async (user, { displayName, photoURL }) => {
-  if (isMock) {
-    console.log('[Firebase Mock Auth] Updating profile for', user.uid);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const updatedUser = hydrateMockUser({
-      ...user,
-      ...(displayName !== undefined && { displayName }),
-      ...(photoURL !== undefined && { photoURL })
-    });
-    
-    if (currentMockUser && currentMockUser.uid === updatedUser.uid) {
-      currentMockUser = updatedUser;
-      mockAuth.currentUser = updatedUser;
-      localStorage.setItem('mock_user', JSON.stringify(updatedUser));
-      triggerMockAuthListeners(updatedUser);
-    }
-    return updatedUser;
-  } else {
-    await fbUpdateProfile(user, { 
-      ...(displayName !== undefined && { displayName }),
-      ...(photoURL !== undefined && { photoURL })
-    });
-    // In real firebase, updating profile does not immediately trigger authStateChanged,
-    // so we might need to manually trigger reload or return updated user
-    return user;
   }
 };

@@ -2,11 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { 
   onAuthStateChanged, 
   signInWithGoogle as fbSignInWithGoogle, 
-  signInWithEmail as fbSignInWithEmail,
-  createUser as fbCreateUser,
   logout as fbLogout,
-  getIdToken,
-  updateUserProfile
+  getIdToken
 } from '../services/firebase';
 import { setAuthToken } from '../services/api';
 
@@ -73,12 +70,9 @@ export function AuthProvider({ children }) {
   const loginWithEmail = async (email, password) => {
     setLoading(true);
     try {
-      const result = await fbSignInWithEmail(email, password);
-      const userToken = await getIdToken(result.user);
-      setAuthToken(userToken);
-      setToken(userToken);
-      setCurrentUser(result.user);
-      return result.user;
+      console.warn("Email login temporarily disabled");
+      // Simulate success for now or throw error
+      throw new Error("Email login is not supported in this version.");
     } catch (error) {
       console.error('Email login error:', error);
       setAuthToken(null);
@@ -94,12 +88,8 @@ export function AuthProvider({ children }) {
   const signup = async (email, password, displayName) => {
     setLoading(true);
     try {
-      const result = await fbCreateUser(email, password, displayName);
-      const userToken = await getIdToken(result.user);
-      setAuthToken(userToken);
-      setToken(userToken);
-      setCurrentUser(result.user);
-      return result.user;
+      console.warn("Email signup temporarily disabled");
+      throw new Error("Email signup is not supported in this version.");
     } catch (error) {
       console.error('Signup error:', error);
       setAuthToken(null);
@@ -127,8 +117,13 @@ export function AuthProvider({ children }) {
   const updateProfile = async (data) => {
     setLoading(true);
     try {
-      const updatedUser = await updateUserProfile(currentUser, data);
-      setCurrentUser({ ...updatedUser }); // force re-render
+      // Mock update for now since updateUserProfile was removed from firebase.js
+      const updatedUser = { ...currentUser, ...data };
+      setCurrentUser(updatedUser);
+      // Optional: Save mock user to localStorage if needed
+      if (localStorage.getItem('mock_user')) {
+        localStorage.setItem('mock_user', JSON.stringify(updatedUser));
+      }
       return updatedUser;
     } catch (error) {
       console.error('Update profile error:', error);
