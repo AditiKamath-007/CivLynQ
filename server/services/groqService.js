@@ -25,6 +25,7 @@ async function generateQuestions(goal, language = 'en') {
     const prompt = `You are a strict legal and civic expert on Indian government processes. 
 The user's goal is: "${goal}".
 IMPORTANT: You MUST generate your response natively in the following language code: ${language}.
+CRITICAL: DO NOT translate the JSON keys. The JSON keys MUST remain exactly as specified in English. Only translate the string values.
 Generate a JSON object with a single key "questions" containing an array of intake questions to determine their exact situation.
 
 CRITICAL RULES FOR QUESTIONS:
@@ -67,6 +68,7 @@ async function generateWorkflow(goal, answers, language = 'en') {
 The user's goal is: "${goal}".
 Their specific situation (based on intake answers) is: ${answersText}.
 IMPORTANT: You MUST generate your response natively in the following language code: ${language}.
+CRITICAL: DO NOT translate the JSON keys. The JSON keys MUST remain exactly as specified in English. Only translate the string values.
 
 CRITICAL DOCUMENT RULES (FAILURE IS UNACCEPTABLE):
 1. ZERO HALLUCINATIONS: You must NEVER invent documents. Only list documents that are strictly required by official, real-world procedures.
@@ -125,6 +127,7 @@ async function askHelper(question, context, language = 'en') {
 The user asked: "${question}"
 Current Context (Roadmap Step): ${contextText}
 IMPORTANT: You MUST generate your response natively in the following language code: ${language}.
+CRITICAL: DO NOT translate the JSON keys. The JSON keys MUST remain exactly as specified in English. Only translate the string values.
 
 CRITICAL RESTRICTIONS:
 1. ONLY answer questions related to the "Current Context" OR general Indian government/civic/bureaucratic processes.
@@ -166,6 +169,7 @@ Document Type: "${templateType}"
 Process/Goal: "${goal}"
 User Details: ${JSON.stringify(intakeAnswers)}
 IMPORTANT: You MUST generate your response natively in the following language code: ${language}.
+CRITICAL: DO NOT translate the JSON keys. The JSON keys MUST remain exactly as specified in English. Only translate the string values.
 
 Generate a draft document text. 
 Return a JSON object with a single key "draft" containing the string text of the draft. Use markdown for formatting.`;
@@ -193,6 +197,7 @@ async function getDocumentGuide(documentName, language = 'en') {
     const prompt = `You are a helpful assistant for Indian civic processes.
 The user wants to know how to obtain or renew the following document: "${documentName}"
 IMPORTANT: You MUST generate your response natively in the following language code: ${language}.
+CRITICAL: DO NOT translate the JSON keys. The JSON keys MUST remain exactly as specified in English. Only translate the string values.
 
 Provide a short, simple guide.
 CRITICAL: Include the exact, direct official Indian government portal URL where the user can apply for or renew this document online. If it cannot be done online, provide the official informational link or a relevant portal.
@@ -232,6 +237,7 @@ Here is a list of available government schemes and their eligibility rules: ${JS
 
 Evaluate the user profile against every scheme.
 IMPORTANT: You MUST generate your response natively in the following language code: ${language}.
+CRITICAL: DO NOT translate the JSON keys. The JSON keys MUST remain exactly as specified in English. Only translate the string values.
 
 Return a JSON object with a single key "eligibleSchemeIds" containing an array of strings. Each string must be the "id" of a scheme the user is definitely or highly likely eligible for. If they are not eligible for any, return an empty array.
 

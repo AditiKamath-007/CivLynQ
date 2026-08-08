@@ -165,7 +165,7 @@ export default function RoadmapQuestions() {
       <div className="mt-6 mb-6">
         <div className="flex items-center justify-between">
           <span className="text-sm font-sans text-brand-ink-mute">
-            Question {currentIndex + 1} of {questions.length}
+            {`Question ${currentIndex + 1} of ${questions.length}`}
           </span>
           <span className="text-sm font-display font-semibold text-brand-orange">
             {Math.round(((currentIndex + 1) / questions.length) * 100)}%
@@ -310,7 +310,7 @@ export default function RoadmapQuestions() {
               className="h-11 px-5 rounded-pill border border-brand-cream-dk bg-white text-brand-ink hover:bg-brand-cream font-medium font-sans flex items-center gap-2 transition"
             >
               <ChevronLeft size={18} />
-              Previous
+              <span>Previous</span>
             </button>
           ) : <div />}
 
@@ -320,7 +320,7 @@ export default function RoadmapQuestions() {
               disabled={isNextDisabled}
               className="bg-brand-orange hover:bg-brand-orange-dk text-white font-display font-semibold px-6 h-11 rounded-pill shadow-card hover:shadow-card-hov flex items-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-brand-cream-dk"
             >
-              Next
+              <span>Next</span>
               <ChevronRight size={18} />
             </button>
           ) : (
@@ -330,7 +330,7 @@ export default function RoadmapQuestions() {
               className="bg-brand-orange hover:bg-brand-orange-dk text-white font-display font-semibold px-6 h-11 rounded-pill shadow-card hover:shadow-card-hov flex items-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-brand-cream-dk"
             >
               {submitting ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
-              {submitting ? 'Generating...' : 'Generate Roadmap'}
+              {submitting ? <span>Generating...</span> : <span>Generate Roadmap</span>}
             </button>
           )}
         </div>

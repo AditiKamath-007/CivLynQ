@@ -149,7 +149,7 @@ export default function RoadmapDetail() {
     );
   }
 
-  const steps = workflow.steps || [];
+  const steps = Array.isArray(workflow.steps) ? workflow.steps : [];
   const currentStep = steps[currentStepIdx] || {};
   const totalSteps = steps.length;
   const completedCount = Object.keys(completedSteps).filter(k => completedSteps[k]).length;
@@ -252,12 +252,11 @@ export default function RoadmapDetail() {
                       : 'border-transparent hover:bg-brand-cream hover:border-brand-cream-dk'
                     }`}
                   >
-                    <div className={`w-7 h-7 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 font-display font-semibold text-xs ${
-                      isActive ? 'bg-brand-orange text-white' 
-                      : isDone ? 'bg-brand-green-accent text-white'
-                      : 'bg-brand-bone text-brand-ink-mute border-2 border-brand-cream-dk'
+                    <div className={`w-8 h-8 flex items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors ${
+                      isDone ? 'bg-brand-orange border-brand-orange text-white' : 
+                      isActive ? 'bg-white border-brand-orange text-brand-orange' : 'bg-white border-brand-cream-dk text-brand-cream-dk'
                     }`}>
-                      {isDone && !isActive ? <Check size={14} /> : idx + 1}
+                      {isDone ? <Check size={14} /> : <span>{idx + 1}</span>}
                     </div>
                     <div>
                       <div className={`font-sans text-[14px] font-semibold leading-tight ${
@@ -283,7 +282,7 @@ export default function RoadmapDetail() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between mb-4">
               <span className="text-sm font-sans text-brand-ink-mute">
-                Step {currentStepIdx + 1} of {totalSteps}
+                {`Step ${currentStepIdx + 1} of ${totalSteps}`}
               </span>
               <button
                 onClick={() => setExitModalOpen(true)}
@@ -418,7 +417,7 @@ export default function RoadmapDetail() {
                 </div>
               )}
 
-              {(officialUrl || (currentStep.links && currentStep.links.length > 0)) && (
+              {(officialUrl || (Array.isArray(currentStep.links) && currentStep.links.length > 0)) && (
                 <div className="mt-6 mb-2 flex flex-wrap gap-3">
                   {officialUrl && (
                     <button 
@@ -431,7 +430,7 @@ export default function RoadmapDetail() {
                       <ExternalLink size={16} /> Official Link
                     </button>
                   )}
-                  {currentStep.links && currentStep.links.map((linkObj, idx) => (
+                  {Array.isArray(currentStep.links) && currentStep.links.map((linkObj, idx) => (
                     <button 
                       key={`link-${idx}`}
                       className="flex items-center gap-2 px-5 py-2.5 bg-brand-orange-lt text-brand-orange hover:bg-brand-orange hover:text-white rounded-pill font-medium text-sm transition-colors shadow-sm"
@@ -456,7 +455,7 @@ export default function RoadmapDetail() {
                     className="h-11 px-5 rounded-pill border border-brand-cream-dk bg-white text-brand-ink hover:bg-brand-cream font-medium font-sans flex items-center gap-2 transition"
                   >
                     <ChevronLeft size={18} />
-                    Previous
+                    <span>Previous</span>
                   </button>
                 ) : <div />}
 
@@ -466,21 +465,21 @@ export default function RoadmapDetail() {
                       onClick={() => setCurrentStepIdx(prev => prev + 1)}
                       className="bg-brand-cream hover:bg-brand-cream-dk text-brand-ink font-display font-semibold px-6 h-11 rounded-pill flex items-center gap-2 transition"
                     >
-                      Next <ChevronRight size={18} />
+                      <span>Next</span> <ChevronRight size={18} />
                     </button>
                   ) : (hasRequiredItems && !allRequiredChecked) ? (
                     <button
                       disabled
                       className="bg-brand-orange hover:bg-brand-orange-dk text-white font-display font-semibold px-6 h-11 rounded-pill shadow-card flex items-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-brand-cream-dk"
                     >
-                      Next <ChevronRight size={18} />
+                      <span>Next</span> <ChevronRight size={18} />
                     </button>
                   ) : (
                     <button
                       onClick={markStepCompleteAndContinue}
                       className="bg-brand-orange hover:bg-brand-orange-dk text-white font-display font-semibold px-6 h-11 rounded-pill shadow-card flex items-center gap-2 transition"
                     >
-                      <Check size={18} /> Mark as Done & Continue
+                      <Check size={18} /> <span>Mark as Done & Continue</span>
                     </button>
                   )
                 ) : (
@@ -488,7 +487,7 @@ export default function RoadmapDetail() {
                     onClick={handleFinishJourney}
                     className="bg-brand-green hover:bg-brand-green-lt text-white font-display font-semibold px-6 h-11 rounded-pill shadow-card-hov flex items-center gap-2 transition"
                   >
-                    <CheckCircle2 size={18} /> Finish Journey
+                    <CheckCircle2 size={18} /> <span>Finish Journey</span>
                   </button>
                 )}
               </div>
