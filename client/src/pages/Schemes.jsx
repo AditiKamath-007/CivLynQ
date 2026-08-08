@@ -9,18 +9,37 @@ import { getSchemeIcon } from '../lib/schemeIcons';
 
 
 function getCategoryColor(scheme) {
+  const category = scheme.category?.toLowerCase() || '';
+  if (category === 'farmers') return { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-100' };
+  if (category === 'health & insurance') return { bg: 'bg-rose-50', text: 'text-rose-500', border: 'border-rose-100' };
+  if (category === 'business & loans') return { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-100' };
+  if (category === 'women & girls' || category === 'youth & students') return { bg: 'bg-violet-50', text: 'text-violet-500', border: 'border-violet-100' };
+  if (category === 'seniors') return { bg: 'bg-sky-50', text: 'text-sky-500', border: 'border-sky-100' };
+  if (category === 'housing') return { bg: 'bg-orange-50', text: 'text-brand-orange', border: 'border-orange-100' };
+  
+  // Fallbacks for backward compatibility if category is missing
   const name = scheme.name?.toLowerCase() || '';
   if (name.includes('kisan') || name.includes('fasal') || name.includes('ujjwala')) return { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-100' };
   if (name.includes('ayushman') || name.includes('suraksha')) return { bg: 'bg-rose-50', text: 'text-rose-500', border: 'border-rose-100' };
   if (name.includes('mudra') || name.includes('stand-up') || name.includes('jan dhan')) return { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-100' };
-  if (name.includes('skill') || name.includes('sukanya')) return { bg: 'bg-violet-50', text: 'text-violet-500', border: 'border-violet-100' };
-  if (name.includes('bima') || name.includes('pension')) return { bg: 'bg-sky-50', text: 'text-sky-500', border: 'border-sky-100' };
-  if (name.includes('awas')) return { bg: 'bg-orange-50', text: 'text-brand-orange', border: 'border-orange-100' };
+  
   return { bg: 'bg-brand-orange-lt', text: 'text-brand-orange', border: 'border-brand-cream-dk' };
 }
 
 export default function Schemes() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+
+  const categories = [
+    { name: 'All', keywords: [] },
+    { name: 'Farmers', keywords: ['kisan', 'fasal', 'farmer', 'agriculture', 'crop'] },
+    { name: 'Women & Girls', keywords: ['ujjwala', 'sukanya', 'women', 'girl'] },
+    { name: 'Seniors', keywords: ['pension', 'atal', '60'] },
+    { name: 'Youth & Students', keywords: ['skill', 'youth', 'student', 'pmkvy'] },
+    { name: 'Health & Insurance', keywords: ['ayushman', 'health', 'bima', 'suraksha', 'insurance'] },
+    { name: 'Business & Loans', keywords: ['mudra', 'stand-up', 'loan', 'business', 'enterprise'] },
+    { name: 'Housing', keywords: ['awas', 'housing', 'home'] },
+  ];
 
   const handleSearch = (query) => {
     if (typeof query === 'string') {
@@ -30,10 +49,18 @@ export default function Schemes() {
     }
   };
 
-  const filteredSchemes = schemes.filter(scheme => 
-    scheme.name.toLowerCase().includes(searchQuery) ||
-    scheme.description.toLowerCase().includes(searchQuery)
-  );
+  const filteredSchemes = schemes.filter(scheme => {
+    const matchesSearch = scheme.name.toLowerCase().includes(searchQuery) ||
+                          scheme.description.toLowerCase().includes(searchQuery);
+    
+    if (selectedCategory === 'All') return matchesSearch;
+
+    const categoryKeywords = categories.find(c => c.name === selectedCategory)?.keywords || [];
+    const searchString = `${scheme.name.toLowerCase()} ${scheme.description.toLowerCase()} ${scheme.eligibility.join(' ').toLowerCase()}`;
+    const matchesCategory = categoryKeywords.some(kw => searchString.includes(kw));
+
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <div className="bg-bone min-h-screen">
@@ -49,17 +76,35 @@ export default function Schemes() {
               </h1>
             </div>
             <span className="hidden sm:inline-block text-sm text-brand-ink-mute font-medium bg-white border border-brand-cream-dk rounded-pill px-3 py-1">
-              {schemes.length} schemes
+              {filteredSchemes.length} schemes
             </span>
           </div>
           <p className="text-[15px] text-brand-ink-mute mt-2 max-w-2xl">
             Discover benefits, subsidies, and welfare programs you may be eligible for.
           </p>
+          
           <div className="mt-6">
             <SearchBar 
               placeholder="Search by scheme name or keyword…"
               onSubmit={handleSearch}
             />
+          </div>
+
+          {/* Category Filters */}
+          <div className="mt-6 flex flex-wrap gap-2">
+            {categories.map(category => (
+              <button
+                key={category.name}
+                onClick={() => setSelectedCategory(category.name)}
+                className={`px-4 py-2 rounded-pill text-sm font-medium transition-colors border ${
+                  selectedCategory === category.name
+                    ? 'bg-brand-orange text-white border-brand-orange shadow-card'
+                    : 'bg-white text-brand-ink-mute border-brand-cream-dk hover:border-brand-orange hover:text-brand-orange'
+                }`}
+              >
+                {category.name}
+              </button>
+            ))}
           </div>
         </header>
 

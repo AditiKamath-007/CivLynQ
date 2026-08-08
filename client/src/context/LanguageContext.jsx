@@ -37,14 +37,21 @@ export function LanguageProvider({ children }) {
   };
 
   const applyGoogleTranslate = (langCode) => {
-    // This function will programmatically change the Google Translate widget if it exists
+    if (langCode === 'en') {
+      const hasCookie = document.cookie.includes('googtrans=');
+      if (hasCookie) {
+        document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=${window.location.hostname}; path=/;`;
+        window.location.reload();
+      }
+      return;
+    }
+
     const select = document.querySelector('.goog-te-combo');
     if (select) {
       select.value = langCode;
       select.dispatchEvent(new Event('change'));
     } else {
-      // If widget hasn't loaded yet, try to set a cookie so it loads in the right language
-      // Google translate cookie format: /auto/lang
       document.cookie = `googtrans=/en/${langCode}; path=/`;
       document.cookie = `googtrans=/en/${langCode}; domain=${window.location.hostname}; path=/`;
     }
