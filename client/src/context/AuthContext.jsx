@@ -67,7 +67,7 @@ export function AuthProvider({ children }) {
   };
 
   /**
-   * Email + password sign-in.
+   * Email + password sign-in (Firebase Auth).
    */
   const loginWithEmail = async (email, password) => {
     setLoading(true);
