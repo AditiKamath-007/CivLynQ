@@ -8,10 +8,52 @@
     color: #2D2A26;
     background: #FCF8F0;
     -webkit-font-smoothing: antialiased;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
   
   h1, h2, h3, h4, .font-display {
     font-family: 'Plus Jakarta Sans', sans-serif;
     letter-spacing: -0.01em;
   }
+}
+
+/* Dark Mode Overrides */
+html.dark, html.dark body {
+  background: #141A14 !important;
+  color: #F0F4F0 !important;
+}
+
+html.dark .bg-bone {
+  background-color: #141A14 !important;
+}
+
+html.dark .bg-white {
+  background-color: #1F281F !important;
+  color: #F0F4F0 !important;
+}
+
+html.dark .text-brand-ink {
+  color: #F0F4F0 !important;
+}
+
+html.dark .text-brand-ink-mute {
+  color: #9EB09E !important;
+}
+
+html.dark .border-brand-cream-dk {
+  border-color: #2E3B2E !important;
+}
+
+html.dark .bg-brand-cream {
+  background-color: #263326 !important;
+}
+
+html.dark header, html.dark aside {
+  border-color: #2E3B2E !important;
+}
+
+html.dark input, html.dark select, html.dark textarea {
+  background-color: #1A231A !important;
+  color: #FFFFFF !important;
+  border-color: #2E3B2E !important;
 }

@@ -3,6 +3,9 @@ import {
   getAuth, 
   GoogleAuthProvider, 
   signInWithPopup as fbSignInWithPopup, 
+  signInWithEmailAndPassword as fbSignInWithEmail,
+  createUserWithEmailAndPassword as fbCreateUserWithEmail,
+  updateProfile as fbUpdateProfile,
   signOut as fbSignOut, 
   onAuthStateChanged as fbOnAuthStateChanged 
 } from 'firebase/auth';
@@ -72,8 +75,7 @@ const mockAuth = {
 };
 
 const mockSignInWithPopup = async () => {
-  console.log('[Firebase Mock Auth] Simulating Google Login...');
-  // Simulate delay
+  console.log('[Firebase Mock Auth] Simulating Login...');
   await new Promise(resolve => setTimeout(resolve, 800));
   
   const user = {
@@ -109,6 +111,28 @@ export const signInWithGoogle = async () => {
     return mockSignInWithPopup();
   } else {
     return fbSignInWithPopup(firebaseAuth, googleAuthProvider);
+  }
+};
+
+export const signInWithEmail = async (email, password) => {
+  if (isMock) {
+    return mockSignInWithPopup();
+  } else {
+    return fbSignInWithEmail(firebaseAuth, email, password);
+  }
+};
+
+export const signUpWithEmail = async (email, password, displayName) => {
+  if (isMock) {
+    const res = await mockSignInWithPopup();
+    if (displayName && res.user) res.user.displayName = displayName;
+    return res;
+  } else {
+    const res = await fbCreateUserWithEmail(firebaseAuth, email, password);
+    if (displayName && res.user) {
+      await fbUpdateProfile(res.user, { displayName });
+    }
+    return res;
   }
 };
 

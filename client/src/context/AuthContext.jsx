@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { 
   onAuthStateChanged, 
   signInWithGoogle as fbSignInWithGoogle, 
+  signInWithEmail as fbSignInWithEmail,
+  signUpWithEmail as fbSignUpWithEmail,
   logout as fbLogout,
   getIdToken
 } from '../services/firebase';
@@ -70,9 +72,12 @@ export function AuthProvider({ children }) {
   const loginWithEmail = async (email, password) => {
     setLoading(true);
     try {
-      console.warn("Email login temporarily disabled");
-      // Simulate success for now or throw error
-      throw new Error("Email login is not supported in this version.");
+      const result = await fbSignInWithEmail(email, password);
+      const userToken = await getIdToken(result.user);
+      setAuthToken(userToken);
+      setToken(userToken);
+      setCurrentUser(result.user);
+      return result.user;
     } catch (error) {
       console.error('Email login error:', error);
       setAuthToken(null);
@@ -88,8 +93,12 @@ export function AuthProvider({ children }) {
   const signup = async (email, password, displayName) => {
     setLoading(true);
     try {
-      console.warn("Email signup temporarily disabled");
-      throw new Error("Email signup is not supported in this version.");
+      const result = await fbSignUpWithEmail(email, password, displayName);
+      const userToken = await getIdToken(result.user);
+      setAuthToken(userToken);
+      setToken(userToken);
+      setCurrentUser(result.user);
+      return result.user;
     } catch (error) {
       console.error('Signup error:', error);
       setAuthToken(null);

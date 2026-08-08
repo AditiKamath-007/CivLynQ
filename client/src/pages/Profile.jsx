@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Pencil, User, FileText, ChevronRight, LogOut, Shield, X, Check, Globe } from 'lucide-react';
+import { Pencil, User, FileText, ChevronRight, LogOut, Shield, X, Check, Globe, Moon, Sun } from 'lucide-react';
 import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage, LANGUAGES } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import { getUserDrafts, checkConsent, saveConsent } from '../services/api';
 
 export default function Profile() {
   const navigate = useNavigate();
   const { currentUser, logout, updateProfile } = useAuth();
   const { language, setLanguage, currentLanguageName } = useLanguage();
+  const { isDark, toggleTheme } = useTheme();
   
   const [expandedRow, setExpandedRow] = useState(null);
   const [drafts, setDrafts] = useState([]);
@@ -297,6 +299,22 @@ export default function Profile() {
                 )}
               </div>
             )}
+          </div>
+
+          {/* Dark Mode Row */}
+          <div>
+            <div className="w-full h-14 flex items-center justify-between px-5 hover:bg-brand-cream transition">
+              <div className="flex items-center gap-3">
+                {isDark ? <Moon size={20} className="text-yellow-400 flex-shrink-0" /> : <Sun size={20} className="text-brand-orange flex-shrink-0" />}
+                <span className="font-sans text-[15px] font-medium text-brand-ink">Dark Mode</span>
+              </div>
+              <button 
+                onClick={toggleTheme}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isDark ? 'bg-brand-orange' : 'bg-brand-cream-dk'}`}
+              >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isDark ? 'translate-x-6' : 'translate-x-1'}`} />
+              </button>
+            </div>
           </div>
 
           {/* AI Drafter Permissions Row */}
