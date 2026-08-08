@@ -172,7 +172,7 @@ export default function Profile() {
       <div className="max-w-md mx-auto px-6 py-12">
         {/* Avatar Section */}
         <div className="relative w-24 h-24 mx-auto mb-4">
-          <div className="w-24 h-24 rounded-full bg-brand-green text-white font-display font-bold text-3xl flex items-center justify-center overflow-hidden">
+          <div className="w-24 h-24 rounded-full bg-brand-green dark:bg-brand-green-dark text-white font-display font-bold text-3xl flex items-center justify-center overflow-hidden">
             {currentUser?.photoURL ? (
               <img src={currentUser.photoURL} alt="Avatar" className="w-full h-full object-cover" />
             ) : (
@@ -211,7 +211,7 @@ export default function Profile() {
               className="w-full h-14 flex items-center gap-3 px-5 hover:bg-brand-cream transition cursor-pointer"
               onClick={() => toggleRow('personal')}
             >
-              <User size={20} className="text-brand-green flex-shrink-0" aria-hidden="true" />
+              <User size={20} className="text-brand-green dark:text-brand-green-dark flex-shrink-0" aria-hidden="true" />
               <span className="font-sans text-[15px] font-medium text-brand-ink flex-1 text-left">Personal Info</span>
               <ChevronRight size={20} className={`text-brand-ink-mute transition-transform ${expandedRow === 'personal' ? 'rotate-90' : ''}`} aria-hidden="true" />
             </button>
@@ -235,7 +235,7 @@ export default function Profile() {
               className="w-full h-14 flex items-center gap-3 px-5 hover:bg-brand-cream transition cursor-pointer"
               onClick={() => toggleRow('language')}
             >
-              <Globe size={20} className="text-brand-green flex-shrink-0" aria-hidden="true" />
+              <Globe size={20} className="text-brand-green dark:text-brand-green-dark flex-shrink-0" aria-hidden="true" />
               <div className="flex flex-1 flex-col items-start justify-center">
                 <span className="font-sans text-[15px] font-medium text-brand-ink leading-none">Language</span>
                 <span className="font-sans text-xs text-brand-ink-mute mt-1">{currentLanguageName}</span>
@@ -268,7 +268,7 @@ export default function Profile() {
               className="w-full h-14 flex items-center gap-3 px-5 hover:bg-brand-cream transition cursor-pointer"
               onClick={() => toggleRow('drafts')}
             >
-              <FileText size={20} className="text-brand-green flex-shrink-0" aria-hidden="true" />
+              <FileText size={20} className="text-brand-green dark:text-brand-green-dark flex-shrink-0" aria-hidden="true" />
               <span className="font-sans text-[15px] font-medium text-brand-ink flex-1 text-left">Drafts & Documents</span>
               <ChevronRight size={20} className={`text-brand-ink-mute transition-transform ${expandedRow === 'drafts' ? 'rotate-90' : ''}`} aria-hidden="true" />
             </button>
@@ -326,7 +326,7 @@ export default function Profile() {
               </div>
               <button 
                 onClick={handleToggleConsent}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${hasConsented ? 'bg-brand-green' : 'bg-brand-cream-dk'}`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${hasConsented ? 'bg-brand-green dark:bg-brand-green-dark' : 'bg-brand-cream-dk'}`}
               >
                 <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${hasConsented ? 'translate-x-6' : 'translate-x-1'}`} />
               </button>

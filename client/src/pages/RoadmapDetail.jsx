@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Clock, ArrowLeft, Check, ExternalLink, Shield, X, CheckCircle2, ChevronLeft, ChevronRight, Sparkles, FileText, CircleCheckBig, LayoutDashboard, Plus } from 'lucide-react';
+import { Clock, ArrowLeft, Check, ExternalLink, Shield, X, CheckCircle2, ChevronLeft, ChevronRight, Sparkles, FileText, CircleCheckBig, LayoutDashboard, Plus, Loader2, Copy, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toArray } from '../utils/toArray';
 import { draftDocument, checkConsent, saveConsent, saveUserDraft, getDocumentGuide } from '../services/api';
@@ -28,6 +28,11 @@ export default function RoadmapDetail() {
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [hasConsented, setHasConsented] = useState(null);
   const [pendingDraftTask, setPendingDraftTask] = useState(null);
+  const [draftModalOpen, setDraftModalOpen] = useState(false);
+  const [draftLoading, setDraftLoading] = useState(false);
+  const [draftContent, setDraftContent] = useState('');
+  const [draftTitle, setDraftTitle] = useState('');
+  const [draftCopied, setDraftCopied] = useState(false);
 
   useEffect(() => {
     if (currentUser) {
@@ -125,6 +130,45 @@ export default function RoadmapDetail() {
       console.error("Failed to update status", e);
     }
     setCompletionModalOpen(true);
+  };
+
+  const handleDraftWithAI = async (templateType, templateName) => {
+    setDraftTitle(templateName || templateType);
+    setDraftContent('');
+    setDraftModalOpen(true);
+    setDraftLoading(true);
+    setDraftCopied(false);
+    try {
+      const goal = workflow.goal || workflow.title || '';
+      const res = await draftDocument(templateType, {}, goal);
+      if (res && res.success && res.draft) {
+        setDraftContent(res.draft);
+      } else {
+        setDraftContent('Failed to generate draft. Please try again.');
+      }
+    } catch (err) {
+      console.error('Draft error:', err);
+      setDraftContent('An error occurred while generating the draft. Please try again.');
+    } finally {
+      setDraftLoading(false);
+    }
+  };
+
+  const handleCopyDraft = () => {
+    navigator.clipboard.writeText(draftContent).then(() => {
+      setDraftCopied(true);
+      setTimeout(() => setDraftCopied(false), 2000);
+    });
+  };
+
+  const handleDownloadDraft = () => {
+    const blob = new Blob([draftContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${draftTitle.replace(/\s+/g, '_')}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
 
@@ -248,13 +292,14 @@ export default function RoadmapDetail() {
                     onClick={() => setCurrentStepIdx(idx)}
                     className={`flex items-start gap-3 p-3 rounded-lg cursor-pointer transition border ${
                       isActive ? 'bg-brand-orange-lt border-brand-orange shadow-card' 
-                      : isDone ? 'bg-brand-green-accent/10 border-brand-green-accent/30 hover:bg-brand-cream hover:border-brand-cream-dk'
+                      : isDone ? 'bg-brand-green-accent dark:bg-brand-green-accent-dark/10 border-brand-green-accent dark:border-brand-green-accent-dark/30 hover:bg-brand-cream hover:border-brand-cream-dk'
                       : 'border-transparent hover:bg-brand-cream hover:border-brand-cream-dk'
                     }`}
                   >
-                    <div className={`w-8 h-8 flex items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors ${
-                      isDone ? 'bg-brand-orange border-brand-orange text-white' : 
-                      isActive ? 'bg-white border-brand-orange text-brand-orange' : 'bg-white border-brand-cream-dk text-brand-cream-dk'
+                    <div className={`w-7 h-7 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 font-display font-semibold text-xs ${
+                      isActive ? 'bg-brand-orange text-white' 
+                      : isDone ? 'bg-brand-green-accent dark:bg-brand-green-accent-dark text-white'
+                      : 'bg-brand-bone text-brand-ink-mute border-2 border-brand-cream-dk'
                     }`}>
                       {isDone ? <Check size={14} /> : <span>{idx + 1}</span>}
                     </div>
@@ -325,7 +370,7 @@ export default function RoadmapDetail() {
                     return (
                       <div key={idx} className="flex items-start gap-3 px-4 py-3 bg-brand-bone border border-brand-cream-dk rounded-lg cursor-pointer hover:bg-brand-cream transition">
                         <div 
-                          className={`w-5 h-5 mt-0.5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${isChecked ? 'bg-brand-green-accent border-brand-green-accent' : 'border-brand-cream-dk'}`}
+                          className={`w-5 h-5 mt-0.5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${isChecked ? 'bg-brand-green-accent dark:bg-brand-green-accent-dark border-brand-green-accent dark:border-brand-green-accent-dark' : 'border-brand-cream-dk'}`}
                           onClick={() => toggleCheck(key)}
                         >
                           {isChecked && (
@@ -367,7 +412,7 @@ export default function RoadmapDetail() {
                     return (
                       <div key={idx} className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3 bg-brand-bone border border-brand-cream-dk rounded-lg hover:bg-brand-cream transition">
                         <div className="flex items-start sm:items-center gap-3 flex-1 cursor-pointer" onClick={() => toggleCheck(key)}>
-                          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${isChecked ? 'bg-brand-green-accent border-brand-green-accent' : 'border-brand-cream-dk'}`}>
+                          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${isChecked ? 'bg-brand-green-accent dark:bg-brand-green-accent-dark border-brand-green-accent dark:border-brand-green-accent-dark' : 'border-brand-cream-dk'}`}>
                             {isChecked && (
                               <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 25 }}>
                                 <Check size={14} className="text-white" />
@@ -389,7 +434,7 @@ export default function RoadmapDetail() {
                           </button>
 
                           {isChecked ? (
-                            <span className="bg-brand-green-accent/15 text-brand-green text-xs px-2 py-0.5 rounded-pill shrink-0">Ready</span>
+                            <span className="bg-brand-green-accent dark:bg-brand-green-accent-dark/15 text-brand-green dark:text-brand-green-dark text-xs px-2 py-0.5 rounded-pill shrink-0">Ready</span>
                           ) : isReq ? (
                             <span className="bg-red-50 text-red-600 text-xs px-2 py-0.5 rounded-pill shrink-0">Required</span>
                           ) : (
@@ -447,6 +492,32 @@ export default function RoadmapDetail() {
                 </div>
               )}
 
+              {/* AI Drafter — Templates */}
+              {Array.isArray(currentStep.templates) && currentStep.templates.length > 0 && (
+                <div className="mt-8">
+                  <h4 className="font-display font-semibold text-base text-brand-ink mb-3 flex items-center gap-2">
+                    <Sparkles size={16} className="text-brand-orange" />
+                    <span>AI Document Drafter</span>
+                  </h4>
+                  <p className="text-sm text-brand-ink-mute font-sans mb-3">
+                    Need help drafting a document for this step? Click below to auto-generate a draft.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {currentStep.templates.map((tpl, idx) => (
+                      <button
+                        key={`tpl-${idx}`}
+                        onClick={() => handleDraftWithAI(tpl.type, tpl.name || tpl.type)}
+                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-brand-orange to-brand-orange-dk text-white rounded-pill font-medium text-sm shadow-card hover:shadow-card-hov transition-all hover:scale-[1.02] active:scale-[0.98]"
+                      >
+                        <FileText size={15} />
+                        <span>{`Draft: ${tpl.name || tpl.type}`}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+
               {/* Navigation Buttons */}
               <div className="flex items-center justify-between mt-8 pt-6 border-t border-brand-cream-dk">
                 {currentStepIdx > 0 ? (
@@ -485,7 +556,7 @@ export default function RoadmapDetail() {
                 ) : (
                   <button
                     onClick={handleFinishJourney}
-                    className="bg-brand-green hover:bg-brand-green-lt text-white font-display font-semibold px-6 h-11 rounded-pill shadow-card-hov flex items-center gap-2 transition"
+                    className="bg-brand-green dark:bg-brand-green-dark hover:bg-brand-green-lt dark:hover:bg-brand-green-lt-dark text-white font-display font-semibold px-6 h-11 rounded-pill shadow-card-hov flex items-center gap-2 transition"
                   >
                     <CheckCircle2 size={18} /> <span>Finish Journey</span>
                   </button>
@@ -529,7 +600,7 @@ export default function RoadmapDetail() {
             {[...Array(5)].map((_, i) => (
                <motion.div 
                  key={i}
-                 className={`absolute bottom-8 w-2 h-2 rounded-full ${['bg-brand-orange', 'bg-brand-green-accent', 'bg-brand-cream-dk'][i % 3]}`}
+                 className={`absolute bottom-8 w-2 h-2 rounded-full ${['bg-brand-orange', 'bg-brand-green-accent dark:bg-brand-green-accent-dark', 'bg-brand-cream-dk'][i % 3]}`}
                  style={{ left: `${20 + (i * 15)}%` }}
                  animate={{ y: [0, -40, -80], opacity: [0, 1, 0] }}
                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 3, delay: i * 0.2 }}
@@ -541,8 +612,8 @@ export default function RoadmapDetail() {
               transition={{ type: "spring", stiffness: 200, damping: 12 }}
               className="flex justify-center"
             >
-              <div className="w-24 h-24 rounded-full bg-brand-green-accent/15 flex items-center justify-center mx-auto">
-                <CircleCheckBig size={56} className="text-brand-green-accent" />
+              <div className="w-24 h-24 rounded-full bg-brand-green-accent dark:bg-brand-green-accent-dark/15 flex items-center justify-center mx-auto">
+                <CircleCheckBig size={56} className="text-brand-green-accent dark:text-brand-green-accent-dark" />
               </div>
             </motion.div>
             <h2 className="font-display font-bold text-2xl text-brand-ink mt-6">Journey complete!</h2>
@@ -582,6 +653,67 @@ export default function RoadmapDetail() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* AI Draft Modal */}
+      {draftModalOpen && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }} 
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl shadow-pop w-full max-w-2xl mx-4 max-h-[85vh] flex flex-col overflow-hidden"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-brand-cream-dk">
+              <div className="flex items-center gap-2">
+                <Sparkles size={18} className="text-brand-orange" />
+                <h2 className="font-display font-semibold text-lg text-brand-ink">
+                  {draftTitle}
+                </h2>
+              </div>
+              <button 
+                onClick={() => setDraftModalOpen(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-brand-cream transition"
+              >
+                <X size={18} className="text-brand-ink-mute" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              {draftLoading ? (
+                <div className="flex flex-col items-center justify-center py-16 gap-3">
+                  <Loader2 size={32} className="animate-spin text-brand-orange" />
+                  <p className="text-sm text-brand-ink-mute font-sans">Generating your draft...</p>
+                </div>
+              ) : (
+                <div className="prose prose-sm max-w-none font-sans text-brand-ink whitespace-pre-wrap leading-relaxed">
+                  {draftContent}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            {!draftLoading && draftContent && (
+              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-brand-cream-dk bg-brand-bone">
+                <button
+                  onClick={handleCopyDraft}
+                  className="inline-flex items-center gap-2 px-4 py-2 border border-brand-cream-dk bg-white text-brand-ink hover:bg-brand-cream rounded-pill font-medium text-sm transition"
+                >
+                  <Copy size={14} />
+                  <span>{draftCopied ? 'Copied!' : 'Copy'}</span>
+                </button>
+                <button
+                  onClick={handleDownloadDraft}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-brand-orange hover:bg-brand-orange-dk text-white rounded-pill font-medium text-sm shadow-card transition"
+                >
+                  <Download size={14} />
+                  <span>Download</span>
+                </button>
+              </div>
+            )}
+          </motion.div>
         </div>
       )}
 

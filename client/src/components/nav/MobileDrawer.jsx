@@ -34,7 +34,7 @@ export default function MobileDrawer({ isOpen, onClose }) {
             animate={{ x: '0%' }}
             exit={{ x: '-100%' }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="fixed inset-y-0 left-0 z-50 w-[240px] bg-brand-green flex flex-col md:hidden shadow-xl"
+            className="fixed inset-y-0 left-0 z-50 w-[240px] bg-brand-green dark:bg-brand-green-dark flex flex-col md:hidden shadow-xl"
           >
             {/* Logo Area */}
             <div className="h-16 flex items-center px-5 mt-2 mb-4">
@@ -57,7 +57,7 @@ export default function MobileDrawer({ isOpen, onClose }) {
                     className={`relative h-12 flex items-center gap-4 px-4 rounded-lg mx-3 my-1 transition-all duration-200 overflow-hidden ${
                       isActive 
                         ? 'bg-brand-orange shadow-pop' 
-                        : 'hover:bg-brand-green-lt'
+                        : 'hover:bg-brand-green-lt dark:hover:bg-brand-green-lt-dark'
                     }`}
                   >
                     <Icon 

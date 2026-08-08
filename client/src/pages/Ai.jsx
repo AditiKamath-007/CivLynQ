@@ -136,7 +136,7 @@ export default function Ai() {
                 className={`flex flex-col w-full ${msg.isUser ? 'items-end' : 'items-start'}`}
               >
                 {!msg.isUser && (
-                  <div className="w-7 h-7 rounded-full bg-brand-green text-white font-display font-bold flex items-center justify-center text-xs mb-1 ml-1">
+                  <div className="w-7 h-7 rounded-full bg-brand-green dark:bg-brand-green-dark text-white font-display font-bold flex items-center justify-center text-xs mb-1 ml-1">
                     LQ
                   </div>
                 )}
@@ -161,7 +161,7 @@ export default function Ai() {
           {/* Typing Indicator */}
           {isTyping && (
             <div className="flex flex-col w-full items-start">
-              <div className="w-7 h-7 rounded-full bg-brand-green text-white font-display font-bold flex items-center justify-center text-xs mb-1 ml-1">
+              <div className="w-7 h-7 rounded-full bg-brand-green dark:bg-brand-green-dark text-white font-display font-bold flex items-center justify-center text-xs mb-1 ml-1">
                 LQ
               </div>
               <div className="max-w-[80%] px-5 py-4 bg-white border border-brand-cream-dk rounded-2xl rounded-tl-sm shadow-card flex gap-1 items-center">

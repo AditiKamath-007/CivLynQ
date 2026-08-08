@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, Search, Landmark, Heart, Briefcase, Coins, GraduationCap, Shield, Tractor, ChevronDown, Sparkles, X, Loader2 } from 'lucide-react';
+import { ChevronRight, Search, Landmark, Heart, Briefcase, Coins, GraduationCap, Shield, Tractor, ChevronDown, Sparkles, X, Loader2, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import SearchBar from '../components/ui/SearchBar';
+import EligibilityCalculator from '../components/EligibilityCalculator';
 import { checkEligibility } from '../services/api';
 import { schemes } from '../data/schemes';
 import { getSchemeIcon } from '../lib/schemeIcons';
@@ -77,20 +78,28 @@ export default function Schemes() {
     return matchesSearch && matchesCategory;
   });
 
-  const handleCheckEligibility = async (e) => {
-    e.preventDefault();
-    setCalcLoading(true);
-    try {
-      const schemesData = schemes.map(s => ({ id: s.id, name: s.name, eligibility: s.eligibility }));
-      const result = await checkEligibility(profile, schemesData);
-      setEligibleIds(result.eligibleSchemeIds || []);
-      setIsCalcOpen(false);
-    } catch (error) {
-      console.error(error);
-      alert('Failed to check eligibility. Please try again.');
-    } finally {
-      setCalcLoading(false);
-    }
+  const handleEligibilityComplete = (answers) => {
+    // Simple mock filtering
+    let filtered = schemes.filter(scheme => {
+      let matches = true;
+      const desc = (scheme.description + ' ' + scheme.eligibility.join(' ')).toLowerCase();
+      
+      // Rule 1: Income
+      if (answers.income === 'above-10l' && desc.includes('low income')) matches = false;
+      
+      // Rule 2: Gender
+      if (answers.gender === 'Male' && desc.includes('women')) matches = false;
+      
+      // Rule 3: Category
+      if (answers.category === 'General' && (desc.includes('sc/st') || desc.includes('obc'))) matches = false;
+      
+      return matches;
+    });
+
+    const mockIds = filtered.slice(0, 4).map(s => s.id);
+    setEligibleIds(mockIds);
+    setIsCalcOpen(false);
+    alert(`Showing ${mockIds.length} schemes for you.`);
   };
 
   return (
@@ -131,22 +140,32 @@ export default function Schemes() {
             </div>
           </div>
           
-          <div className="mt-6 flex flex-col sm:flex-row gap-3">
-            <div className="flex-1">
-              <SearchBar 
-                placeholder="Search by scheme name or keyword…"
-                onSubmit={handleSearch}
-              />
-            </div>
-            
-            <div className="relative sm:w-56 flex-shrink-0">
+          <div className="mt-6 flex items-center gap-3 w-full max-w-3xl mx-auto">
+            <div className="flex-1 flex items-center gap-2 bg-white border border-brand-cream-dk rounded-pill px-2 py-2 shadow-card hover:shadow-card-hov focus-within:border-brand-orange focus-within:shadow-pop transition-all duration-200 relative">
+              <Search size={18} className="text-brand-ink-mute flex-shrink-0 ml-2" />
+              
               <button
                 type="button"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="w-full h-full min-h-[48px] px-4 py-2 flex items-center justify-between rounded-xl border border-brand-cream-dk bg-white text-sm font-medium text-brand-ink focus:outline-none hover:border-brand-orange transition-colors cursor-pointer shadow-sm"
+                className="flex items-center gap-1.5 bg-brand-cream hover:bg-brand-orange-lt border border-brand-cream-dk text-brand-ink text-sm font-sans font-medium px-3 h-9 rounded-pill transition cursor-pointer flex-shrink-0"
               >
                 <span>{selectedCategory === 'All' ? 'All Categories' : selectedCategory}</span>
-                <ChevronDown size={18} className={`text-brand-ink-mute transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown size={14} className={`text-brand-ink-mute transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              <input
+                type="text"
+                placeholder="Search by scheme name or keyword…"
+                value={searchQuery}
+                onChange={handleSearch}
+                className="flex-1 bg-transparent outline-none px-3 font-sans text-[15px] text-brand-ink placeholder:text-brand-ink-mute min-w-[120px]"
+              />
+
+              <button
+                type="button"
+                className="w-10 h-10 rounded-full bg-brand-orange hover:bg-brand-orange-dk text-white flex items-center justify-center transition shadow-card flex-shrink-0"
+              >
+                <ArrowRight size={18} />
               </button>
 
               {isDropdownOpen && (
@@ -155,7 +174,7 @@ export default function Schemes() {
                     className="fixed inset-0 z-10" 
                     onClick={() => setIsDropdownOpen(false)} 
                   />
-                  <div className="absolute z-20 top-full mt-2 w-full bg-white border border-brand-cream-dk rounded-xl shadow-card overflow-hidden">
+                  <div className="absolute z-20 top-full left-0 mt-2 w-full sm:w-64 bg-white border border-brand-cream-dk rounded-xl shadow-card overflow-hidden">
                     <ul className="max-h-64 overflow-y-auto p-1.5 flex flex-col gap-0.5">
                       {categories.map(category => {
                         const dummyScheme = { category: category.name === 'All' ? '' : category.name };
@@ -266,92 +285,11 @@ export default function Schemes() {
       </div>
 
       {/* Eligibility Modal */}
-      {isCalcOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-brand-ink/40 backdrop-blur-sm" onClick={() => !calcLoading && setIsCalcOpen(false)} />
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="relative bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden"
-          >
-            <div className="px-6 py-4 border-b border-brand-cream-dk flex items-center justify-between">
-              <h3 className="font-display font-bold text-lg text-brand-ink flex items-center gap-2">
-                <Sparkles size={20} className="text-brand-orange" />
-                Eligibility Calculator
-              </h3>
-              <button onClick={() => !calcLoading && setIsCalcOpen(false)} className="text-brand-ink-mute hover:text-brand-ink p-1 transition-colors rounded-lg hover:bg-brand-cream">
-                <X size={20} />
-              </button>
-            </div>
-            
-            <div className="p-6">
-              <form onSubmit={handleCheckEligibility} className="flex flex-col gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-brand-ink mb-1.5">Age</label>
-                  <input type="number" required value={profile.age} onChange={e => setProfile({...profile, age: e.target.value})} className="w-full px-3 py-2.5 border border-brand-cream-dk rounded-xl focus:ring-1 focus:ring-brand-orange outline-none" placeholder="e.g. 25" />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-semibold text-brand-ink mb-1.5">Gender</label>
-                  <select required value={profile.gender} onChange={e => setProfile({...profile, gender: e.target.value})} className="w-full px-3 py-2.5 border border-brand-cream-dk rounded-xl focus:ring-1 focus:ring-brand-orange outline-none bg-white">
-                    <option value="">Select gender...</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-semibold text-brand-ink mb-1.5">Occupation Status</label>
-                  <select required value={profile.occupation} onChange={e => setProfile({...profile, occupation: e.target.value})} className="w-full px-3 py-2.5 border border-brand-cream-dk rounded-xl focus:ring-1 focus:ring-brand-orange outline-none bg-white">
-                    <option value="">Select occupation...</option>
-                    <option value="Student">Student</option>
-                    <option value="Farmer">Farmer</option>
-                    <option value="Business Owner / Self-Employed">Business Owner / Self-Employed</option>
-                    <option value="Salaried Employee">Salaried Employee</option>
-                    <option value="Unemployed">Unemployed</option>
-                    <option value="Senior Citizen / Retired">Senior Citizen / Retired</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-brand-ink mb-1.5">Social Category</label>
-                  <select required value={profile.category} onChange={e => setProfile({...profile, category: e.target.value})} className="w-full px-3 py-2.5 border border-brand-cream-dk rounded-xl focus:ring-1 focus:ring-brand-orange outline-none bg-white">
-                    <option value="">Select category...</option>
-                    <option value="General">General</option>
-                    <option value="OBC">OBC</option>
-                    <option value="SC/ST">SC/ST</option>
-                    <option value="Minority">Minority</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-brand-ink mb-1.5">Annual Household Income</label>
-                  <select required value={profile.income} onChange={e => setProfile({...profile, income: e.target.value})} className="w-full px-3 py-2.5 border border-brand-cream-dk rounded-xl focus:ring-1 focus:ring-brand-orange outline-none bg-white">
-                    <option value="">Select income range...</option>
-                    <option value="Below ₹1 Lakh">Below ₹1 Lakh</option>
-                    <option value="₹1 Lakh - ₹3 Lakhs">₹1 Lakh - ₹3 Lakhs</option>
-                    <option value="₹3 Lakhs - ₹8 Lakhs">₹3 Lakhs - ₹8 Lakhs</option>
-                    <option value="Above ₹8 Lakhs">Above ₹8 Lakhs</option>
-                  </select>
-                </div>
-                
-                <button 
-                  type="submit" 
-                  disabled={calcLoading}
-                  className="mt-4 w-full py-3 bg-brand-orange text-white rounded-xl font-bold hover:bg-[#d66524] transition-colors disabled:opacity-70 flex items-center justify-center gap-2"
-                >
-                  {calcLoading ? (
-                    <><Loader2 size={18} className="animate-spin" /> Analyzing Eligibility...</>
-                  ) : (
-                    'Check Schemes'
-                  )}
-                </button>
-              </form>
-            </div>
-          </motion.div>
-        </div>
-      )}
+      <EligibilityCalculator 
+        isOpen={isCalcOpen} 
+        onClose={() => setIsCalcOpen(false)} 
+        onComplete={handleEligibilityComplete} 
+      />
     </div>
   );
 }

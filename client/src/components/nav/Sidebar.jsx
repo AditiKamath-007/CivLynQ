@@ -19,7 +19,7 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`hidden md:flex flex-col fixed inset-y-0 left-0 z-40 bg-brand-green transition-all duration-[220ms] ease-out ${
+      className={`hidden md:flex flex-col fixed inset-y-0 left-0 z-40 bg-brand-green dark:bg-brand-green-dark transition-all duration-[220ms] ease-out ${
         open ? 'w-[220px]' : 'w-[64px]'
       }`}
       onMouseEnter={() => setOpen(true)}
@@ -57,11 +57,8 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Spacer pushes Profile to bottom */}
-      <div className="flex-1" />
-
       {/* Profile — pinned to bottom-left */}
-      <div className="mb-4">
+      <div className="mt-auto mb-4">
         <div className="h-px bg-white/15 mx-3 mb-3" />
         <NavItem
           item={PROFILE_ITEM}
@@ -83,7 +80,7 @@ function NavItem({ item, isActive, open }) {
       className={`relative h-11 flex items-center gap-3 px-3 rounded-lg mx-2 my-0.5 transition-all duration-200 overflow-hidden ${
         isActive 
           ? 'bg-brand-orange shadow-pop scale-[1.02]' 
-          : 'hover:bg-brand-green-lt'
+          : 'hover:bg-brand-green-lt dark:hover:bg-brand-green-lt-dark'
       }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

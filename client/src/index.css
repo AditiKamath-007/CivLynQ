@@ -5,10 +5,13 @@
 @layer base {
   html, body {
     font-family: 'Inter', sans-serif;
-    color: #2D2A26;
-    background: #FCF8F0;
+    @apply text-brand-ink bg-brand-bone;
     -webkit-font-smoothing: antialiased;
     transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  
+  .dark body, .dark html {
+    @apply text-brand-dark-ink bg-brand-dark;
   }
   
   h1, h2, h3, h4, .font-display {
@@ -56,4 +59,14 @@ html.dark input, html.dark select, html.dark textarea {
   background-color: #1A231A !important;
   color: #FFFFFF !important;
   border-color: #2E3B2E !important;
+}
+
+@layer utilities {
+  .dark .text-brand-ink { color: theme('colors.brand.dark-ink') !important; }
+  .dark .text-brand-ink-mute { color: theme('colors.brand.dark-ink-mute') !important; }
+  .dark .bg-white { background-color: theme('colors.brand.dark-card') !important; }
+  .dark .bg-brand-cream, .dark .bg-brand-bone { background-color: theme('colors.brand.dark-card') !important; }
+  .dark .bg-brand-cream-dk { background-color: theme('colors.brand.dark-border') !important; }
+  .dark .border-brand-cream-dk { border-color: theme('colors.brand.dark-border') !important; }
+}
 }

@@ -23,7 +23,7 @@ export default function CompletionModal({ isOpen }) {
             transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
             className="mx-auto w-20 flex justify-center mb-4"
           >
-            <CircleCheckBig size={72} className="text-brand-green-accent" aria-hidden="true" />
+            <CircleCheckBig size={72} className="text-brand-green-accent dark:text-brand-green-accent-dark" aria-hidden="true" />
           </motion.div>
           
           <h2 className="font-display font-bold text-2xl text-brand-ink mt-4">Journey complete!</h2>

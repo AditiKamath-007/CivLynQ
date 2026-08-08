@@ -57,7 +57,7 @@ export default function Login() {
   return (
     <div className="flex flex-col md:flex-row min-h-screen">
       {/* Left Panel - Hidden on Mobile */}
-      <div className="hidden md:flex md:w-1/2 bg-brand-green p-12 flex-col justify-between relative overflow-hidden">
+      <div className="hidden md:flex md:w-1/2 bg-brand-green dark:bg-brand-green-dark p-12 flex-col justify-between relative overflow-hidden">
         <h1 className="text-white font-display font-extrabold text-4xl relative z-10">CIVLYNQ</h1>
         <h2 className="text-white/90 font-display text-2xl font-medium leading-snug max-w-sm relative z-10">
           "Navigate government processes with confidence."
