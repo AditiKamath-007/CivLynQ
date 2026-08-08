@@ -124,8 +124,8 @@ export default function SchemeDetail() {
             <ul className="space-y-3">
               {scheme.eligibility.map((item, i) => (
                 <li key={i} className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-brand-green-accent/15 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Check size={12} className="text-brand-green-accent" />
+                  <div className="w-5 h-5 rounded-full bg-brand-green-accent dark:bg-brand-green-accent-dark/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Check size={12} className="text-brand-green-accent dark:text-brand-green-accent-dark" />
                   </div>
                   <span className="text-[15px] text-brand-ink leading-relaxed">{item}</span>
                 </li>
@@ -212,13 +212,13 @@ export default function SchemeDetail() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.4 }}
-          className="mt-8 bg-gradient-to-r from-brand-green to-brand-green-lt rounded-2xl p-6 text-center text-white"
+          className="mt-8 bg-gradient-to-r from-brand-green dark:from-brand-green-dark to-brand-green-lt dark:to-brand-green-lt-dark rounded-2xl p-6 text-center text-white"
         >
           <p className="font-display font-bold text-lg mb-1">Ready to apply?</p>
           <p className="text-sm text-white/80 mb-4">Let CivLynQ guide you step-by-step through the application process.</p>
           <button
             onClick={() => navigate(`/roadmap/questions?goal=${encodeURIComponent(scheme.name + ' application')}`)}
-            className="px-6 py-2.5 bg-white text-brand-green font-display font-bold rounded-pill hover:bg-brand-cream transition-colors shadow-card"
+            className="px-6 py-2.5 bg-white text-brand-green dark:text-brand-green-dark font-display font-bold rounded-pill hover:bg-brand-cream transition-colors shadow-card"
           >
             Start Journey →
           </button>

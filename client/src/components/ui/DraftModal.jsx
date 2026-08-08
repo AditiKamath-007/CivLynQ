@@ -68,7 +68,7 @@ export default function DraftModal({
             ) : (
               <div className="flex flex-col gap-4 h-full min-h-[200px]">
                 {saved && (
-                  <div className="bg-brand-green-accent/10 border border-brand-green-accent text-brand-green rounded-lg p-3 flex items-center gap-2 text-sm font-medium">
+                  <div className="bg-brand-green-accent dark:bg-brand-green-accent-dark/10 border border-brand-green-accent dark:border-brand-green-accent-dark text-brand-green dark:text-brand-green-dark rounded-lg p-3 flex items-center gap-2 text-sm font-medium">
                     <Check size={18} /> Draft saved successfully to your Profile!
                   </div>
                 )}

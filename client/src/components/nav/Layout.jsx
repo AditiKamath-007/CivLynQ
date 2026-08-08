@@ -16,7 +16,7 @@ export default function Layout() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-bone">
+    <div className="flex h-screen overflow-hidden bg-brand-bone dark:bg-brand-dark transition-colors duration-200">
       {/* Desktop Sidebar */}
       <Sidebar />
       

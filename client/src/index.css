@@ -5,8 +5,7 @@
 @layer base {
   html, body {
     font-family: 'Inter', sans-serif;
-    color: #2D2A26;
-    background: #FCF8F0;
+    @apply text-brand-ink dark:text-brand-dark-ink bg-brand-bone dark:bg-brand-dark;
     -webkit-font-smoothing: antialiased;
   }
   
@@ -14,4 +13,13 @@
     font-family: 'Plus Jakarta Sans', sans-serif;
     letter-spacing: -0.01em;
   }
+}
+
+@layer utilities {
+  .dark .text-brand-ink { color: theme('colors.brand.dark-ink') !important; }
+  .dark .text-brand-ink-mute { color: theme('colors.brand.dark-ink-mute') !important; }
+  .dark .bg-white { background-color: theme('colors.brand.dark-card') !important; }
+  .dark .bg-brand-cream, .dark .bg-brand-bone { background-color: theme('colors.brand.dark-card') !important; }
+  .dark .bg-brand-cream-dk { background-color: theme('colors.brand.dark-border') !important; }
+  .dark .border-brand-cream-dk { border-color: theme('colors.brand.dark-border') !important; }
 }

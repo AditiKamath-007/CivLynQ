@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -11,14 +12,26 @@ export default {
           orange:       '#E8702A',
           'orange-dk':  '#D9621E',
           'orange-lt':  '#FDEAD9',
-          green:        '#3F6B3D',
-          'green-lt':   '#5A8C56',
-          'green-accent':'#7AB55A',
+          green:           '#3F6B3D',
+          'green-lt':      '#5A8C56',
+          'green-accent':  '#7AB55A',
+          'green-dark':         '#3D6657',
+          'green-lt-dark':      '#4FAF8F',
+          'green-accent-dark':  '#A8DCC8',
           cream:        '#FAF3E3',
           'cream-dk':   '#F2EBDA',
           bone:         '#FCF8F0',
           ink:          '#2D2A26',
           'ink-mute':   '#6B655C',
+          dark: '#121212',
+          'dark-card': '#1E1E1E',
+          'dark-card-hover': '#2A2A2A',
+          'dark-border': '#2E2E2E',
+          'dark-ink': '#F5F5F5',
+          'dark-ink-mute': '#A0A0A0',
+          'dark-accent-green': '#5A8C56',
+          'dark-accent-orange': '#F58442',
+          'dark-tint': '#1F2A1F',
         }
       },
       fontFamily: {

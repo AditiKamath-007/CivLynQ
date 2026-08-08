@@ -180,17 +180,24 @@ export default function RoadmapQuestions() {
       </div>
 
       {/* Single question card */}
-      <div className="bg-white rounded-2xl border border-brand-cream-dk shadow-card p-8 min-h-[400px] flex flex-col">
-        <div className="w-10 h-10 rounded-full bg-brand-orange-lt text-brand-orange font-display font-bold flex items-center justify-center text-base">
+      <motion.div
+        key={currentIndex}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.05 }}
+        className="bg-white dark:bg-brand-dark-card rounded-card border border-brand-cream-dk dark:border-brand-dark-border shadow-card hover:shadow-card-hov transition-all duration-200 p-6 mb-4 min-h-[400px] flex flex-col"
+      >
+        <div className="w-9 h-9 rounded-full bg-brand-orange-lt dark:bg-brand-dark-accent-orange/20 text-brand-orange dark:text-brand-dark-accent-orange font-display font-bold flex items-center justify-center text-sm flex-shrink-0">
           {currentIndex + 1}
         </div>
         
-        <h2 className="font-display font-semibold text-xl text-brand-ink mt-4 leading-snug">
+        <h2 className="font-display font-semibold text-lg text-brand-ink dark:text-brand-dark-ink mt-4 leading-snug">
           {currentQuestion.question}
+          {isRequired && <span className="text-red-500 ml-1">*</span>}
         </h2>
         
         {(currentQuestion.helper || currentQuestion.description) && (
-          <p className="text-sm text-brand-ink-mute mt-2 font-sans">
+          <p className="text-sm text-brand-ink-mute dark:text-brand-dark-ink-mute mt-2 font-sans leading-relaxed">
             {currentQuestion.helper || currentQuestion.description}
           </p>
         )}
@@ -202,23 +209,23 @@ export default function RoadmapQuestions() {
               {(currentQuestion.documents || []).map((doc) => {
                 const isSelected = selectedArr.includes(doc.id);
                 return (
-                  <div 
-                    key={doc.id}
+                  <div
+                    key={doc.id || doc.name}
                     onClick={() => handleSelectOption(currentQuestion.id, doc.id, true)}
-                    className="flex items-center gap-3 px-4 py-3 bg-brand-bone border border-brand-cream-dk rounded-lg cursor-pointer hover:bg-brand-cream transition mb-2"
+                    className={`flex items-center gap-3 px-4 py-3 border rounded-lg mb-2 cursor-pointer transition-all ${
+                      isSelected 
+                        ? 'bg-brand-green-accent dark:bg-brand-green-accent-dark/10 dark:bg-brand-dark-accent-green/15 border-brand-green-accent dark:border-brand-green-accent-dark' 
+                        : 'bg-white dark:bg-brand-dark-card border-brand-cream-dk dark:border-brand-dark-border hover:bg-brand-cream dark:hover:bg-brand-dark-card-hover'
+                    }`}
                   >
-                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${isSelected ? 'bg-brand-green-accent border-brand-green-accent' : 'border-brand-cream-dk'}`}>
-                      {isSelected && (
-                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 25 }}>
-                          <Check size={14} className="text-white" />
-                        </motion.div>
-                      )}
-                    </div>
-                    <span className="font-sans text-[15px] text-brand-ink flex-1">{doc.name}</span>
+                    <span className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                      isSelected ? 'bg-brand-green-accent dark:bg-brand-green-accent-dark border-brand-green-accent dark:border-brand-green-accent-dark' : 'border-brand-cream-dk dark:border-brand-dark-border'
+                    }`}>
+                      {isSelected && <Check size={14} className="text-white" />}
+                    </span>
+                    <span className="flex-1 font-sans text-[15px] text-brand-ink dark:text-brand-dark-ink">{doc.name}</span>
                     {doc.required && (
-                      <span className="bg-red-50 text-red-600 text-[11px] font-medium px-2 py-0.5 rounded-pill">
-                        Required
-                      </span>
+                      <span className="bg-red-50 text-red-600 text-[11px] font-medium px-2 py-0.5 rounded-pill">Required</span>
                     )}
                   </div>
                 );
@@ -230,24 +237,33 @@ export default function RoadmapQuestions() {
               {currentQuestion.options.map((opt) => {
                 const isSelected = selectedArr.includes(opt);
                 return (
-                  <div 
+                  <button
                     key={opt}
+                    type="button"
                     onClick={() => handleSelectOption(currentQuestion.id, opt, true)}
-                    className={`flex items-center gap-3 w-full text-left bg-brand-bone border rounded-lg px-4 py-3 mb-2 cursor-pointer transition ${
-                      isSelected 
-                        ? 'bg-brand-orange-lt border-brand-orange' 
-                        : 'border-brand-cream-dk hover:bg-brand-orange-lt hover:border-brand-orange'
+                    className={`w-full text-left border rounded-lg px-4 py-3 mb-2 cursor-pointer transition-all duration-200 flex items-center gap-3 font-sans text-[15px] ${
+                      isSelected
+                        ? 'border-brand-green-accent dark:border-brand-green-accent-dark bg-brand-green-accent dark:bg-brand-green-accent-dark/10 dark:bg-brand-dark-accent-green/15 text-brand-ink dark:text-brand-dark-ink shadow-card'
+                        : 'bg-white dark:bg-brand-dark-card border-brand-cream-dk dark:border-brand-dark-border text-brand-ink dark:text-brand-dark-ink hover:border-brand-orange hover:bg-brand-orange-lt dark:hover:bg-brand-dark-card-hover'
                     }`}
                   >
-                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${isSelected ? 'bg-brand-green-accent border-brand-green-accent' : 'border-brand-cream-dk'}`}>
+                    <span className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                      isSelected 
+                        ? 'bg-brand-green-accent dark:bg-brand-green-accent-dark border-brand-green-accent dark:border-brand-green-accent-dark' 
+                        : 'border-brand-cream-dk dark:border-brand-dark-border'
+                    }`}>
                       {isSelected && (
-                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 25 }}>
+                        <motion.span
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                        >
                           <Check size={14} className="text-white" />
-                        </motion.div>
+                        </motion.span>
                       )}
-                    </div>
-                    <span className="font-sans text-[15px] text-brand-ink">{opt}</span>
-                  </div>
+                    </span>
+                    <span className="flex-1">{opt}</span>
+                  </button>
                 );
               })}
             </div>
@@ -257,25 +273,38 @@ export default function RoadmapQuestions() {
               {currentQuestion.options.map((opt) => {
                 const isSelected = val === opt;
                 return (
-                  <div 
+                  <button
                     key={opt}
+                    type="button"
                     onClick={() => handleSelectOption(currentQuestion.id, opt, false)}
-                    className={`flex items-center justify-between w-full text-left rounded-lg px-4 py-3 mb-2 cursor-pointer transition font-sans text-[15px] border ${
-                      isSelected 
-                        ? 'bg-brand-orange text-white border-brand-orange font-medium shadow-card' 
-                        : 'bg-brand-bone border-brand-cream-dk hover:bg-brand-orange-lt hover:border-brand-orange text-brand-ink'
+                    className={`w-full text-left border rounded-lg px-4 py-3 mb-2 cursor-pointer transition-all duration-200 flex items-center gap-3 font-sans text-[15px] ${
+                      isSelected
+                        ? 'border-brand-orange bg-brand-orange-lt dark:bg-brand-dark-accent-orange/15 text-brand-ink dark:text-brand-dark-ink shadow-card'
+                        : 'bg-white dark:bg-brand-dark-card border-brand-cream-dk dark:border-brand-dark-border text-brand-ink dark:text-brand-dark-ink hover:border-brand-orange hover:bg-brand-orange-lt dark:hover:bg-brand-dark-card-hover'
                     }`}
                   >
-                    <span>{opt}</span>
-                    {isSelected && <Check size={18} />}
-                  </div>
+                    <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                      isSelected ? 'border-brand-orange' : 'border-brand-cream-dk dark:border-brand-dark-border'
+                    }`}>
+                      {isSelected && (
+                        <motion.span
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                          className="w-2.5 h-2.5 rounded-full bg-brand-orange"
+                        />
+                      )}
+                    </span>
+                    <span className="flex-1">{opt}</span>
+                    {isSelected && <Check size={18} className="text-brand-orange flex-shrink-0" />}
+                  </button>
                 );
               })}
             </div>
           ) : /* Textarea type */
           qType === 'textarea' ? (
             <textarea
-              className="w-full h-32 resize-none bg-white border border-brand-cream-dk rounded-lg p-3 font-sans text-[15px] focus:border-brand-orange focus:shadow-pop outline-none transition mt-2"
+              className="w-full h-28 bg-white dark:bg-brand-dark-card border border-brand-cream-dk dark:border-brand-dark-border rounded-lg px-3 py-2 mt-3 font-sans text-[15px] text-brand-ink dark:text-brand-dark-ink placeholder:text-brand-ink-mute dark:placeholder:text-brand-dark-ink-mute focus:border-brand-orange focus:shadow-pop outline-none transition resize-none"
               placeholder={currentQuestion.placeholder || "Type your answer…"}
               value={val || ''}
               onChange={(e) => handleTextChange(currentQuestion.id, e.target.value)}
@@ -294,7 +323,7 @@ export default function RoadmapQuestions() {
           ) : (
             <input
               type="text"
-              className="w-full h-11 bg-white border border-brand-cream-dk rounded-lg px-3 font-sans text-[15px] focus:border-brand-orange focus:shadow-pop outline-none transition mt-2"
+              className="w-full h-11 bg-white dark:bg-brand-dark-card border border-brand-cream-dk dark:border-brand-dark-border rounded-lg px-3 mt-3 font-sans text-[15px] text-brand-ink dark:text-brand-dark-ink placeholder:text-brand-ink-mute dark:placeholder:text-brand-dark-ink-mute focus:border-brand-orange focus:shadow-pop outline-none transition"
               placeholder={currentQuestion.placeholder || "Type your answer…"}
               value={val || ''}
               onChange={(e) => handleTextChange(currentQuestion.id, e.target.value)}
@@ -334,7 +363,7 @@ export default function RoadmapQuestions() {
             </button>
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
