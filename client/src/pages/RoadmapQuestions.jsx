@@ -168,7 +168,7 @@ export default function RoadmapQuestions() {
             {`Question ${currentIndex + 1} of ${questions.length}`}
           </span>
           <span className="text-sm font-display font-semibold text-brand-orange">
-            {Math.round(((currentIndex + 1) / questions.length) * 100)}%
+            {`${Math.round(((currentIndex + 1) / questions.length) * 100)}%`}
           </span>
         </div>
         <div className="h-1.5 w-full bg-brand-cream-dk rounded-pill overflow-hidden mt-2 mb-8">
