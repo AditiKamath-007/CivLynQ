@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage, LANGUAGES } from '../context/LanguageContext';
@@ -7,9 +7,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Signup() {
   const navigate = useNavigate();
-  const { signup, login } = useAuth(); // login is still used for Google auth
+  const { signup, login, user } = useAuth(); // login is still used for Google auth
   const { setLanguage } = useLanguage();
   
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
+
   const [showPassword, setShowPassword] = useState(false);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   

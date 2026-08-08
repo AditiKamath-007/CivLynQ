@@ -1,4 +1,6 @@
-const admin = require('firebase-admin');
+const { initializeApp, cert } = require('firebase-admin/app');
+const { getAuth } = require('firebase-admin/auth');
+const { getFirestore } = require('firebase-admin/firestore');
 const fs = require('fs');
 const path = require('path');
 
@@ -38,10 +40,10 @@ try {
   let credentials = null;
 
   if (fs.existsSync(serviceAccountPath)) {
-    credentials = admin.cert(require(serviceAccountPath));
+    credentials = cert(require(serviceAccountPath));
     console.log('[Firebase] Initializing using service account file:', serviceAccountPath);
   } else if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
-    credentials = admin.cert({
+    credentials = cert({
       projectId: process.env.FIREBASE_PROJECT_ID,
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
       privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
@@ -50,11 +52,11 @@ try {
   }
 
   if (credentials) {
-    admin.initializeApp({
+    const app = initializeApp({
       credential: credentials
     });
-    authService = admin.auth();
-    dbService = admin.firestore();
+    authService = getAuth(app);
+    dbService = getFirestore(app);
     console.log('[Firebase] Successfully connected to Firebase Admin SDK.');
   } else {
     throw new Error('No credentials provided.');
