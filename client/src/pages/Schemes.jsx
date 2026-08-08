@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, Search, Landmark, Heart, Briefcase, Coins, GraduationCap, Shield, Tractor } from 'lucide-react';
+import { ChevronRight, Search, Landmark, Heart, Briefcase, Coins, GraduationCap, Shield, Tractor, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import SearchBar from '../components/ui/SearchBar';
 import { schemes } from '../data/schemes';
 import { getSchemeIcon } from '../lib/schemeIcons';
-
-
 
 function getCategoryColor(scheme) {
   const category = scheme.category?.toLowerCase() || '';
@@ -29,6 +27,7 @@ function getCategoryColor(scheme) {
 export default function Schemes() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const categories = [
     { name: 'All', keywords: [] },
@@ -75,36 +74,72 @@ export default function Schemes() {
                 Government Schemes
               </h1>
             </div>
-            <span className="hidden sm:inline-block text-sm text-brand-ink-mute font-medium bg-white border border-brand-cream-dk rounded-pill px-3 py-1">
-              {filteredSchemes.length} schemes
-            </span>
           </div>
           <p className="text-[15px] text-brand-ink-mute mt-2 max-w-2xl">
             Discover benefits, subsidies, and welfare programs you may be eligible for.
           </p>
           
-          <div className="mt-6">
-            <SearchBar 
-              placeholder="Search by scheme name or keyword…"
-              onSubmit={handleSearch}
-            />
-          </div>
-
-          {/* Category Filters */}
-          <div className="mt-6 flex flex-wrap gap-2">
-            {categories.map(category => (
+          <div className="mt-6 flex flex-col sm:flex-row gap-3">
+            <div className="flex-1">
+              <SearchBar 
+                placeholder="Search by scheme name or keyword…"
+                onSubmit={handleSearch}
+              />
+            </div>
+            
+            <div className="relative sm:w-56 flex-shrink-0">
               <button
-                key={category.name}
-                onClick={() => setSelectedCategory(category.name)}
-                className={`px-4 py-2 rounded-pill text-sm font-medium transition-colors border ${
-                  selectedCategory === category.name
-                    ? 'bg-brand-orange text-white border-brand-orange shadow-card'
-                    : 'bg-white text-brand-ink-mute border-brand-cream-dk hover:border-brand-orange hover:text-brand-orange'
-                }`}
+                type="button"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="w-full h-full min-h-[48px] px-4 py-2 flex items-center justify-between rounded-xl border border-brand-cream-dk bg-white text-sm font-medium text-brand-ink focus:outline-none hover:border-brand-orange transition-colors cursor-pointer shadow-sm"
               >
-                {category.name}
+                <span>{selectedCategory === 'All' ? 'All Categories' : selectedCategory}</span>
+                <ChevronDown size={18} className={`text-brand-ink-mute transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
-            ))}
+
+              {isDropdownOpen && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-10" 
+                    onClick={() => setIsDropdownOpen(false)} 
+                  />
+                  <div className="absolute z-20 top-full mt-2 w-full bg-white border border-brand-cream-dk rounded-xl shadow-card overflow-hidden">
+                    <ul className="max-h-64 overflow-y-auto p-1.5 flex flex-col gap-0.5">
+                      {categories.map(category => {
+                        const dummyScheme = { category: category.name === 'All' ? '' : category.name };
+                        const colors = category.name === 'All' 
+                          ? { bg: 'bg-brand-cream-dk', text: 'text-brand-ink-mute' }
+                          : getCategoryColor(dummyScheme);
+                          
+                        const dotColor = category.name === 'All' 
+                          ? 'bg-brand-ink-mute' 
+                          : colors.text.replace('text-', 'bg-');
+
+                        return (
+                          <li
+                            key={category.name}
+                            onClick={() => {
+                              setSelectedCategory(category.name);
+                              setIsDropdownOpen(false);
+                            }}
+                            className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${
+                              selectedCategory === category.name 
+                                ? 'bg-brand-orange-lt text-brand-ink font-semibold' 
+                                : 'hover:bg-brand-cream/50 text-brand-ink font-medium'
+                            }`}
+                          >
+                            <div className={`w-2.5 h-2.5 rounded-full ${dotColor}`} />
+                            <span className="text-sm">
+                              {category.name === 'All' ? 'All Categories' : category.name}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </header>
 
