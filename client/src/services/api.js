@@ -124,3 +124,10 @@ export async function getUserDrafts() {
 export async function saveUserDraft(draftData) {
   return request('/user/drafts', draftData);
 }
+
+/**
+ * Check eligibility for schemes using AI.
+ */
+export async function checkEligibility(profile, schemesData) {
+  return request('/check-eligibility', { profile, schemesData });
+}

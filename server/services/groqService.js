@@ -221,10 +221,46 @@ Return a JSON object with EXACTLY this structure:
   }
 }
 
+async function checkEligibility(profile, schemesData, language = 'en') {
+  try {
+    const client = getGroqClient();
+    if (!client) throw new Error('Groq not initialized');
+
+    const prompt = `You are an expert government assessor.
+The user profile is: ${JSON.stringify(profile)}.
+Here is a list of available government schemes and their eligibility rules: ${JSON.stringify(schemesData)}.
+
+Evaluate the user profile against every scheme.
+IMPORTANT: You MUST generate your response natively in the following language code: ${language}.
+
+Return a JSON object with a single key "eligibleSchemeIds" containing an array of strings. Each string must be the "id" of a scheme the user is definitely or highly likely eligible for. If they are not eligible for any, return an empty array.
+
+Return ONLY valid JSON matching this structure:
+{
+  "eligibleSchemeIds": ["scheme-id-1", "scheme-id-2"]
+}`;
+
+    const completion = await client.chat.completions.create({
+      messages: [{ role: 'user', content: prompt }],
+      model: MODEL,
+      response_format: { type: 'json_object' },
+      temperature: 0
+    });
+
+    const result = JSON.parse(completion.choices[0].message.content);
+    return result.eligibleSchemeIds || [];
+  } catch (error) {
+    console.error('Error checking eligibility via Groq:', error);
+    // Fallback: return empty array if AI fails
+    return [];
+  }
+}
+
 module.exports = {
   generateQuestions,
   generateWorkflow,
   askHelper,
   draftDocument,
-  getDocumentGuide
+  getDocumentGuide,
+  checkEligibility
 };

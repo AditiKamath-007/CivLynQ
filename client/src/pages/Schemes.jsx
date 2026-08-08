@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, Search, Landmark, Heart, Briefcase, Coins, GraduationCap, Shield, Tractor, ChevronDown } from 'lucide-react';
+import { ChevronRight, Search, Landmark, Heart, Briefcase, Coins, GraduationCap, Shield, Tractor, ChevronDown, Sparkles, X, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import SearchBar from '../components/ui/SearchBar';
+import { checkEligibility } from '../services/api';
 import { schemes } from '../data/schemes';
 import { getSchemeIcon } from '../lib/schemeIcons';
 
@@ -28,6 +29,17 @@ export default function Schemes() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isCalcOpen, setIsCalcOpen] = useState(false);
+  const [calcLoading, setCalcLoading] = useState(false);
+  const [eligibleIds, setEligibleIds] = useState(null);
+  
+  const [profile, setProfile] = useState({
+    age: '',
+    gender: '',
+    occupation: '',
+    category: '',
+    income: ''
+  });
 
   const categories = [
     { name: 'All', keywords: [] },
@@ -49,6 +61,10 @@ export default function Schemes() {
   };
 
   const filteredSchemes = schemes.filter(scheme => {
+    if (eligibleIds !== null) {
+       if (!eligibleIds.includes(scheme.id)) return false;
+    }
+
     const matchesSearch = scheme.name.toLowerCase().includes(searchQuery) ||
                           scheme.description.toLowerCase().includes(searchQuery);
     
@@ -61,23 +77,59 @@ export default function Schemes() {
     return matchesSearch && matchesCategory;
   });
 
+  const handleCheckEligibility = async (e) => {
+    e.preventDefault();
+    setCalcLoading(true);
+    try {
+      const schemesData = schemes.map(s => ({ id: s.id, name: s.name, eligibility: s.eligibility }));
+      const result = await checkEligibility(profile, schemesData);
+      setEligibleIds(result.eligibleSchemeIds || []);
+      setIsCalcOpen(false);
+    } catch (error) {
+      console.error(error);
+      alert('Failed to check eligibility. Please try again.');
+    } finally {
+      setCalcLoading(false);
+    }
+  };
+
   return (
     <div className="bg-bone min-h-screen">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         
         {/* Header */}
         <header className="mb-10">
-          <div className="flex items-end justify-between mb-2">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-2">
             <div>
               <p className="text-sm font-medium text-brand-orange mb-1 tracking-wide uppercase">Explore</p>
-              <h1 className="font-display font-bold text-3xl md:text-4xl text-brand-ink">
+              <h1 className="font-display font-bold text-3xl md:text-4xl text-brand-ink mb-2">
                 Government Schemes
               </h1>
+              <p className="text-[15px] text-brand-ink-mute max-w-2xl">
+                Discover benefits, subsidies, and welfare programs you may be eligible for.
+              </p>
+            </div>
+            
+            <div>
+              {eligibleIds !== null ? (
+                <button 
+                  onClick={() => setEligibleIds(null)}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-brand-cream-dk shadow-sm rounded-xl text-sm font-medium text-brand-ink hover:border-brand-orange-lt transition-colors"
+                >
+                  <X size={16} />
+                  Clear Eligibility Filter
+                </button>
+              ) : (
+                <button 
+                  onClick={() => setIsCalcOpen(true)}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-brand-orange to-[#F2994A] text-white rounded-xl text-sm font-bold hover:shadow-lg hover:-translate-y-0.5 transition-all"
+                >
+                  <Sparkles size={18} />
+                  Check Eligibility
+                </button>
+              )}
             </div>
           </div>
-          <p className="text-[15px] text-brand-ink-mute mt-2 max-w-2xl">
-            Discover benefits, subsidies, and welfare programs you may be eligible for.
-          </p>
           
           <div className="mt-6 flex flex-col sm:flex-row gap-3">
             <div className="flex-1">
@@ -212,6 +264,94 @@ export default function Schemes() {
           )}
         </div>
       </div>
+
+      {/* Eligibility Modal */}
+      {isCalcOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-brand-ink/40 backdrop-blur-sm" onClick={() => !calcLoading && setIsCalcOpen(false)} />
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="relative bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden"
+          >
+            <div className="px-6 py-4 border-b border-brand-cream-dk flex items-center justify-between">
+              <h3 className="font-display font-bold text-lg text-brand-ink flex items-center gap-2">
+                <Sparkles size={20} className="text-brand-orange" />
+                Eligibility Calculator
+              </h3>
+              <button onClick={() => !calcLoading && setIsCalcOpen(false)} className="text-brand-ink-mute hover:text-brand-ink p-1 transition-colors rounded-lg hover:bg-brand-cream">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <form onSubmit={handleCheckEligibility} className="flex flex-col gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-brand-ink mb-1.5">Age</label>
+                  <input type="number" required value={profile.age} onChange={e => setProfile({...profile, age: e.target.value})} className="w-full px-3 py-2.5 border border-brand-cream-dk rounded-xl focus:ring-1 focus:ring-brand-orange outline-none" placeholder="e.g. 25" />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-semibold text-brand-ink mb-1.5">Gender</label>
+                  <select required value={profile.gender} onChange={e => setProfile({...profile, gender: e.target.value})} className="w-full px-3 py-2.5 border border-brand-cream-dk rounded-xl focus:ring-1 focus:ring-brand-orange outline-none bg-white">
+                    <option value="">Select gender...</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-semibold text-brand-ink mb-1.5">Occupation Status</label>
+                  <select required value={profile.occupation} onChange={e => setProfile({...profile, occupation: e.target.value})} className="w-full px-3 py-2.5 border border-brand-cream-dk rounded-xl focus:ring-1 focus:ring-brand-orange outline-none bg-white">
+                    <option value="">Select occupation...</option>
+                    <option value="Student">Student</option>
+                    <option value="Farmer">Farmer</option>
+                    <option value="Business Owner / Self-Employed">Business Owner / Self-Employed</option>
+                    <option value="Salaried Employee">Salaried Employee</option>
+                    <option value="Unemployed">Unemployed</option>
+                    <option value="Senior Citizen / Retired">Senior Citizen / Retired</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-brand-ink mb-1.5">Social Category</label>
+                  <select required value={profile.category} onChange={e => setProfile({...profile, category: e.target.value})} className="w-full px-3 py-2.5 border border-brand-cream-dk rounded-xl focus:ring-1 focus:ring-brand-orange outline-none bg-white">
+                    <option value="">Select category...</option>
+                    <option value="General">General</option>
+                    <option value="OBC">OBC</option>
+                    <option value="SC/ST">SC/ST</option>
+                    <option value="Minority">Minority</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-brand-ink mb-1.5">Annual Household Income</label>
+                  <select required value={profile.income} onChange={e => setProfile({...profile, income: e.target.value})} className="w-full px-3 py-2.5 border border-brand-cream-dk rounded-xl focus:ring-1 focus:ring-brand-orange outline-none bg-white">
+                    <option value="">Select income range...</option>
+                    <option value="Below ₹1 Lakh">Below ₹1 Lakh</option>
+                    <option value="₹1 Lakh - ₹3 Lakhs">₹1 Lakh - ₹3 Lakhs</option>
+                    <option value="₹3 Lakhs - ₹8 Lakhs">₹3 Lakhs - ₹8 Lakhs</option>
+                    <option value="Above ₹8 Lakhs">Above ₹8 Lakhs</option>
+                  </select>
+                </div>
+                
+                <button 
+                  type="submit" 
+                  disabled={calcLoading}
+                  className="mt-4 w-full py-3 bg-brand-orange text-white rounded-xl font-bold hover:bg-[#d66524] transition-colors disabled:opacity-70 flex items-center justify-center gap-2"
+                >
+                  {calcLoading ? (
+                    <><Loader2 size={18} className="animate-spin" /> Analyzing Eligibility...</>
+                  ) : (
+                    'Check Schemes'
+                  )}
+                </button>
+              </form>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

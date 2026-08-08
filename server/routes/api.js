@@ -72,6 +72,18 @@ router.post('/document-guide', async (req, res) => {
   }
 });
 
+// POST /api/check-eligibility
+router.post('/check-eligibility', async (req, res) => {
+  try {
+    const { profile, schemesData, language } = req.body;
+    const eligibleSchemeIds = await groqService.checkEligibility(profile, schemesData, language);
+    res.json({ success: true, eligibleSchemeIds });
+  } catch (error) {
+    console.error('Error checking eligibility:', error);
+    res.status(500).json({ success: false, message: 'Failed to check eligibility' });
+  }
+});
+
 // User Database Routes
 // POST /api/user/consent
 router.post('/user/consent', verifyToken, async (req, res) => {
