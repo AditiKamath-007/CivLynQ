@@ -2,7 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { 
   getAuth, 
   GoogleAuthProvider, 
-  signInWithRedirect as fbSignInWithRedirect, 
+  signInWithPopup as fbSignInWithPopup, 
   signOut as fbSignOut, 
   onAuthStateChanged as fbOnAuthStateChanged 
 } from 'firebase/auth';
@@ -108,7 +108,7 @@ export const signInWithGoogle = async () => {
   if (isMock) {
     return mockSignInWithPopup();
   } else {
-    return fbSignInWithRedirect(firebaseAuth, googleAuthProvider);
+    return fbSignInWithPopup(firebaseAuth, googleAuthProvider);
   }
 };
 
