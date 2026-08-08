@@ -57,7 +57,8 @@ export default function Signup() {
     setError('');
     try {
       await login();
-      setShowLanguageModal(true);
+      // After successful Google login, navigate to home
+      navigate('/');
     } catch (err) {
       console.error('Failed to sign up with Google:', err);
       setError('Google sign-up failed. Please try again.');
