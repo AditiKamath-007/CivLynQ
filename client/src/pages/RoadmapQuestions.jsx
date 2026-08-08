@@ -69,7 +69,8 @@ export default function RoadmapQuestions() {
       const res = await generateWorkflow(goal, answers);
       if (res && res.success && res.workflow) {
         const id = `roadmap-${Date.now()}`;
-        localStorage.setItem(id, JSON.stringify(res.workflow));
+        const workflowData = { ...res.workflow, goal };
+        localStorage.setItem(id, JSON.stringify(workflowData));
         navigate(`/roadmap/${id}`);
       } else {
         throw new Error('Failed to build roadmap');

@@ -129,7 +129,7 @@ const Dashboard = () => {
                   </button>
 
                   <h2 className="font-display font-semibold text-lg text-brand-ink pr-10 line-clamp-2">
-                    {journey.goal || 'Untitled Journey'}
+                    {journey.title || journey.goal || 'Untitled Journey'}
                   </h2>
                   
                   {/* Progress Bar */}

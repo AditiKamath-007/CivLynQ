@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Clock, ArrowLeft, Check, ExternalLink, Shield, X, CheckCircle2, ChevronLeft, ChevronRight, Sparkles, FileText, CircleCheckBig, LayoutDashboard, Plus } from 'lucide-react';
+import { Clock, ArrowLeft, Check, ExternalLink, Shield, X, CheckCircle2, ChevronLeft, ChevronRight, Sparkles, FileText, CircleCheckBig, LayoutDashboard, Plus, Loader2, Copy, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toArray } from '../utils/toArray';
 import { draftDocument, checkConsent, saveConsent, saveUserDraft, getDocumentGuide } from '../services/api';
@@ -28,6 +28,11 @@ export default function RoadmapDetail() {
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [hasConsented, setHasConsented] = useState(null);
   const [pendingDraftTask, setPendingDraftTask] = useState(null);
+  const [draftModalOpen, setDraftModalOpen] = useState(false);
+  const [draftLoading, setDraftLoading] = useState(false);
+  const [draftContent, setDraftContent] = useState('');
+  const [draftTitle, setDraftTitle] = useState('');
+  const [draftCopied, setDraftCopied] = useState(false);
 
   useEffect(() => {
     if (currentUser) {
@@ -125,6 +130,45 @@ export default function RoadmapDetail() {
       console.error("Failed to update status", e);
     }
     setCompletionModalOpen(true);
+  };
+
+  const handleDraftWithAI = async (templateType, templateName) => {
+    setDraftTitle(templateName || templateType);
+    setDraftContent('');
+    setDraftModalOpen(true);
+    setDraftLoading(true);
+    setDraftCopied(false);
+    try {
+      const goal = workflow.goal || workflow.title || '';
+      const res = await draftDocument(templateType, {}, goal);
+      if (res && res.success && res.draft) {
+        setDraftContent(res.draft);
+      } else {
+        setDraftContent('Failed to generate draft. Please try again.');
+      }
+    } catch (err) {
+      console.error('Draft error:', err);
+      setDraftContent('An error occurred while generating the draft. Please try again.');
+    } finally {
+      setDraftLoading(false);
+    }
+  };
+
+  const handleCopyDraft = () => {
+    navigator.clipboard.writeText(draftContent).then(() => {
+      setDraftCopied(true);
+      setTimeout(() => setDraftCopied(false), 2000);
+    });
+  };
+
+  const handleDownloadDraft = () => {
+    const blob = new Blob([draftContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${draftTitle.replace(/\s+/g, '_')}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
 
@@ -447,6 +491,32 @@ export default function RoadmapDetail() {
                 </div>
               )}
 
+              {/* AI Drafter — Templates */}
+              {Array.isArray(currentStep.templates) && currentStep.templates.length > 0 && (
+                <div className="mt-8">
+                  <h4 className="font-display font-semibold text-base text-brand-ink mb-3 flex items-center gap-2">
+                    <Sparkles size={16} className="text-brand-orange" />
+                    <span>AI Document Drafter</span>
+                  </h4>
+                  <p className="text-sm text-brand-ink-mute font-sans mb-3">
+                    Need help drafting a document for this step? Click below to auto-generate a draft.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {currentStep.templates.map((tpl, idx) => (
+                      <button
+                        key={`tpl-${idx}`}
+                        onClick={() => handleDraftWithAI(tpl.type, tpl.name || tpl.type)}
+                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-brand-orange to-brand-orange-dk text-white rounded-pill font-medium text-sm shadow-card hover:shadow-card-hov transition-all hover:scale-[1.02] active:scale-[0.98]"
+                      >
+                        <FileText size={15} />
+                        <span>{`Draft: ${tpl.name || tpl.type}`}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+
               {/* Navigation Buttons */}
               <div className="flex items-center justify-between mt-8 pt-6 border-t border-brand-cream-dk">
                 {currentStepIdx > 0 ? (
@@ -582,6 +652,67 @@ export default function RoadmapDetail() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* AI Draft Modal */}
+      {draftModalOpen && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }} 
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl shadow-pop w-full max-w-2xl mx-4 max-h-[85vh] flex flex-col overflow-hidden"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-brand-cream-dk">
+              <div className="flex items-center gap-2">
+                <Sparkles size={18} className="text-brand-orange" />
+                <h2 className="font-display font-semibold text-lg text-brand-ink">
+                  {draftTitle}
+                </h2>
+              </div>
+              <button 
+                onClick={() => setDraftModalOpen(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-brand-cream transition"
+              >
+                <X size={18} className="text-brand-ink-mute" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              {draftLoading ? (
+                <div className="flex flex-col items-center justify-center py-16 gap-3">
+                  <Loader2 size={32} className="animate-spin text-brand-orange" />
+                  <p className="text-sm text-brand-ink-mute font-sans">Generating your draft...</p>
+                </div>
+              ) : (
+                <div className="prose prose-sm max-w-none font-sans text-brand-ink whitespace-pre-wrap leading-relaxed">
+                  {draftContent}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            {!draftLoading && draftContent && (
+              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-brand-cream-dk bg-brand-bone">
+                <button
+                  onClick={handleCopyDraft}
+                  className="inline-flex items-center gap-2 px-4 py-2 border border-brand-cream-dk bg-white text-brand-ink hover:bg-brand-cream rounded-pill font-medium text-sm transition"
+                >
+                  <Copy size={14} />
+                  <span>{draftCopied ? 'Copied!' : 'Copy'}</span>
+                </button>
+                <button
+                  onClick={handleDownloadDraft}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-brand-orange hover:bg-brand-orange-dk text-white rounded-pill font-medium text-sm shadow-card transition"
+                >
+                  <Download size={14} />
+                  <span>Download</span>
+                </button>
+              </div>
+            )}
+          </motion.div>
         </div>
       )}
 
