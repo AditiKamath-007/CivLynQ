@@ -5,8 +5,12 @@
 @layer base {
   html, body {
     font-family: 'Inter', sans-serif;
-    @apply text-brand-ink dark:text-brand-dark-ink bg-brand-bone dark:bg-brand-dark;
+    @apply text-brand-ink bg-brand-bone;
     -webkit-font-smoothing: antialiased;
+  }
+  
+  .dark body, .dark html {
+    @apply text-brand-dark-ink bg-brand-dark;
   }
   
   h1, h2, h3, h4, .font-display {
