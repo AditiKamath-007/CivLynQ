@@ -292,13 +292,14 @@ export default function RoadmapDetail() {
                     onClick={() => setCurrentStepIdx(idx)}
                     className={`flex items-start gap-3 p-3 rounded-lg cursor-pointer transition border ${
                       isActive ? 'bg-brand-orange-lt border-brand-orange shadow-card' 
-                      : isDone ? 'bg-brand-green-accent/10 border-brand-green-accent/30 hover:bg-brand-cream hover:border-brand-cream-dk'
+                      : isDone ? 'bg-brand-green-accent dark:bg-brand-green-accent-dark/10 border-brand-green-accent dark:border-brand-green-accent-dark/30 hover:bg-brand-cream hover:border-brand-cream-dk'
                       : 'border-transparent hover:bg-brand-cream hover:border-brand-cream-dk'
                     }`}
                   >
-                    <div className={`w-8 h-8 flex items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors ${
-                      isDone ? 'bg-brand-orange border-brand-orange text-white' : 
-                      isActive ? 'bg-white border-brand-orange text-brand-orange' : 'bg-white border-brand-cream-dk text-brand-cream-dk'
+                    <div className={`w-7 h-7 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 font-display font-semibold text-xs ${
+                      isActive ? 'bg-brand-orange text-white' 
+                      : isDone ? 'bg-brand-green-accent dark:bg-brand-green-accent-dark text-white'
+                      : 'bg-brand-bone text-brand-ink-mute border-2 border-brand-cream-dk'
                     }`}>
                       {isDone ? <Check size={14} /> : <span>{idx + 1}</span>}
                     </div>
@@ -369,7 +370,7 @@ export default function RoadmapDetail() {
                     return (
                       <div key={idx} className="flex items-start gap-3 px-4 py-3 bg-brand-bone border border-brand-cream-dk rounded-lg cursor-pointer hover:bg-brand-cream transition">
                         <div 
-                          className={`w-5 h-5 mt-0.5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${isChecked ? 'bg-brand-green-accent border-brand-green-accent' : 'border-brand-cream-dk'}`}
+                          className={`w-5 h-5 mt-0.5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${isChecked ? 'bg-brand-green-accent dark:bg-brand-green-accent-dark border-brand-green-accent dark:border-brand-green-accent-dark' : 'border-brand-cream-dk'}`}
                           onClick={() => toggleCheck(key)}
                         >
                           {isChecked && (
@@ -411,7 +412,7 @@ export default function RoadmapDetail() {
                     return (
                       <div key={idx} className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3 bg-brand-bone border border-brand-cream-dk rounded-lg hover:bg-brand-cream transition">
                         <div className="flex items-start sm:items-center gap-3 flex-1 cursor-pointer" onClick={() => toggleCheck(key)}>
-                          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${isChecked ? 'bg-brand-green-accent border-brand-green-accent' : 'border-brand-cream-dk'}`}>
+                          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${isChecked ? 'bg-brand-green-accent dark:bg-brand-green-accent-dark border-brand-green-accent dark:border-brand-green-accent-dark' : 'border-brand-cream-dk'}`}>
                             {isChecked && (
                               <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 25 }}>
                                 <Check size={14} className="text-white" />
@@ -433,7 +434,7 @@ export default function RoadmapDetail() {
                           </button>
 
                           {isChecked ? (
-                            <span className="bg-brand-green-accent/15 text-brand-green text-xs px-2 py-0.5 rounded-pill shrink-0">Ready</span>
+                            <span className="bg-brand-green-accent dark:bg-brand-green-accent-dark/15 text-brand-green dark:text-brand-green-dark text-xs px-2 py-0.5 rounded-pill shrink-0">Ready</span>
                           ) : isReq ? (
                             <span className="bg-red-50 text-red-600 text-xs px-2 py-0.5 rounded-pill shrink-0">Required</span>
                           ) : (
@@ -555,7 +556,7 @@ export default function RoadmapDetail() {
                 ) : (
                   <button
                     onClick={handleFinishJourney}
-                    className="bg-brand-green hover:bg-brand-green-lt text-white font-display font-semibold px-6 h-11 rounded-pill shadow-card-hov flex items-center gap-2 transition"
+                    className="bg-brand-green dark:bg-brand-green-dark hover:bg-brand-green-lt dark:hover:bg-brand-green-lt-dark text-white font-display font-semibold px-6 h-11 rounded-pill shadow-card-hov flex items-center gap-2 transition"
                   >
                     <CheckCircle2 size={18} /> <span>Finish Journey</span>
                   </button>
@@ -599,7 +600,7 @@ export default function RoadmapDetail() {
             {[...Array(5)].map((_, i) => (
                <motion.div 
                  key={i}
-                 className={`absolute bottom-8 w-2 h-2 rounded-full ${['bg-brand-orange', 'bg-brand-green-accent', 'bg-brand-cream-dk'][i % 3]}`}
+                 className={`absolute bottom-8 w-2 h-2 rounded-full ${['bg-brand-orange', 'bg-brand-green-accent dark:bg-brand-green-accent-dark', 'bg-brand-cream-dk'][i % 3]}`}
                  style={{ left: `${20 + (i * 15)}%` }}
                  animate={{ y: [0, -40, -80], opacity: [0, 1, 0] }}
                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 3, delay: i * 0.2 }}
@@ -611,8 +612,8 @@ export default function RoadmapDetail() {
               transition={{ type: "spring", stiffness: 200, damping: 12 }}
               className="flex justify-center"
             >
-              <div className="w-24 h-24 rounded-full bg-brand-green-accent/15 flex items-center justify-center mx-auto">
-                <CircleCheckBig size={56} className="text-brand-green-accent" />
+              <div className="w-24 h-24 rounded-full bg-brand-green-accent dark:bg-brand-green-accent-dark/15 flex items-center justify-center mx-auto">
+                <CircleCheckBig size={56} className="text-brand-green-accent dark:text-brand-green-accent-dark" />
               </div>
             </motion.div>
             <h2 className="font-display font-bold text-2xl text-brand-ink mt-6">Journey complete!</h2>

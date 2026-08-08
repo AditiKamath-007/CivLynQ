@@ -153,7 +153,7 @@ export default function PageAIHelper() {
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-4 border-b border-brand-cream-dk">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-brand-green text-white font-display font-bold text-sm flex items-center justify-center">
+                  <div className="w-9 h-9 rounded-full bg-brand-green dark:bg-brand-green-dark text-white font-display font-bold text-sm flex items-center justify-center">
                     LQ
                   </div>
                   <div>

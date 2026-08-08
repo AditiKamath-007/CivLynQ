@@ -147,7 +147,7 @@ const Dashboard = () => {
                     
                     {/* Status Pill */}
                     {isCompleted ? (
-                      <span className="bg-brand-green-accent/15 text-brand-green text-[10px] px-2 py-0.5 rounded-pill font-medium uppercase tracking-wider">
+                      <span className="bg-brand-green-accent dark:bg-brand-green-accent-dark/15 text-brand-green dark:text-brand-green-dark text-[10px] px-2 py-0.5 rounded-pill font-medium uppercase tracking-wider">
                         Completed
                       </span>
                     ) : (
